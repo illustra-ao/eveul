@@ -1,14 +1,13 @@
-// app/watches/page.tsx
 import { SiteNavbar } from "@/components/site-navbar";
 import { SiteFooter } from "@/components/site-footer";
-import { WatchesCatalog } from "@/components/watches/watches-catalog";
+import { WatchesCatalogSupabase } from "@/components/watches/watches-catalog-supabase";
 
 export default function WatchesPage() {
   return (
     <main className="relative">
       <SiteNavbar />
       <div className="pt-24">
-        <WatchesCatalog />
+        <WatchesCatalogSupabase />
       </div>
       <SiteFooter />
     </main>

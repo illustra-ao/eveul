@@ -32,7 +32,7 @@ export function SiteFooter() {
           <div className="md:col-span-8">
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
               <FooterCol title="Colecção">
-                <FooterLink href="#watches">Relógios</FooterLink>
+                <FooterLink href="/watches">Relógios</FooterLink>
                 <FooterLink href="#best-sellers">Best Sellers</FooterLink>
                 <FooterLink href="#craftsmanship">Craftsmanship</FooterLink>
               </FooterCol>

@@ -28,7 +28,7 @@ export function CraftsmanshipStory() {
     const ctx = gsap.context(() => {
       // estado inicial
       gsap.set([headerRef.current, leftRef.current], { autoAlpha: 0, y: 14 });
-      gsap.set([mediaRef.current], { autoAlpha: 0, y: 18, scale: 0.99 });
+      
       gsap.set([mini1Ref.current, mini2Ref.current], { autoAlpha: 0, y: 14 });
       gsap.set(stripRef.current, { autoAlpha: 0, y: 12 });
 
@@ -47,12 +47,12 @@ export function CraftsmanshipStory() {
       tl.to(
         mediaRef.current,
         { autoAlpha: 1, y: 0, scale: 1, duration: 0.85 },
-        0.1
+        0.1,
       );
       tl.to(
         [mini1Ref.current, mini2Ref.current],
         { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.12 },
-        0.25
+        0.25,
       );
       tl.to(stripRef.current, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.35);
     }, root);
@@ -63,18 +63,12 @@ export function CraftsmanshipStory() {
   const togglePlay = async () => {
     const v = videoRef.current;
     if (!v) return;
-
-    try {
-      if (v.paused) {
-        await v.play();
-        setIsPlaying(true);
-      } else {
-        v.pause();
-        setIsPlaying(false);
-      }
-    } catch {
-      // se o browser bloquear autoplay/play sem gesto, o click já é gesto.
-      // mantemos silencioso.
+    if (v.paused) {
+      await v.play();
+      setIsPlaying(true);
+    } else {
+      v.pause();
+      setIsPlaying(false);
     }
   };
 

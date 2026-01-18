@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 type Product = {
-  id: string;
+  id: string; // interno (carrinho, tracking)
+  slug: string; // ✅ público (rota)
   name: string;
   collection?: string;
   price: number;
@@ -18,7 +19,8 @@ type Product = {
 
 const products: Product[] = [
   {
-    id: "eveul-jupiter",
+    id: "prod_jupiter", // podes manter como quiseres
+    slug: "eveul-jupiter",
     name: "Eveul Jupiter",
     collection: "Signature",
     price: 189000,
@@ -28,7 +30,8 @@ const products: Product[] = [
     badge: "BEST SELLER",
   },
   {
-    id: "eveul-paraiba",
+    id: "prod_paraiba",
+    slug: "eveul-paraiba",
     name: "Eveul Paraíba",
     collection: "Limited Edition",
     price: 265000,
@@ -38,7 +41,8 @@ const products: Product[] = [
     badge: "LIMITED",
   },
   {
-    id: "eveul-noir",
+    id: "prod_noir",
+    slug: "eveul-noir",
     name: "Eveul Noir",
     collection: "Classic",
     price: 149000,
@@ -48,7 +52,8 @@ const products: Product[] = [
     badge: "NEW",
   },
   {
-    id: "eveul-goldline",
+    id: "prod_goldline",
+    slug: "eveul-goldline",
     name: "Eveul Goldline",
     collection: "Signature",
     price: 210000,
@@ -68,7 +73,6 @@ export function BestSellers() {
       {/* fundo subtil */}
       <div className="absolute inset-0">
         <div className="absolute -right-24 -top-24 h-[360px] w-[360px] rounded-full bg-[color:var(--gold)]/6 blur-[120px] md:-right-44 md:-top-32 md:h-[520px] md:w-[520px] md:blur-[140px]" />
-
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/80" />
       </div>
 
@@ -117,9 +121,13 @@ export function BestSellers() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-              Ver Todos os Relógios
+            <Button
+              asChild
+              className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+            >
+              <Link href="/watches">Ver Todos os Relógios</Link>
             </Button>
+
             <Link
               href="#"
               className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
@@ -158,6 +166,7 @@ function Pill({
 function ProductCard({ product }: { product: Product }) {
   const {
     id,
+    slug,
     name,
     collection,
     price,
@@ -204,7 +213,7 @@ function ProductCard({ product }: { product: Product }) {
               className="h-11 flex-1 rounded-full border-border bg-black/30 text-foreground backdrop-blur hover:bg-black/45"
               asChild
             >
-              <Link href={`/watches/${id}`}>Ver detalhes</Link>
+              <Link href={`/watches/${slug}`}>Ver detalhes</Link>
             </Button>
 
             <Button
@@ -225,6 +234,7 @@ function ProductCard({ product }: { product: Product }) {
         <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
           {collection?.toUpperCase() ?? "EVEUL"}
         </div>
+
         <h3 className="mt-2 font-[var(--font-display)] text-xl tracking-tight">
           {name}
         </h3>
@@ -236,10 +246,10 @@ function ProductCard({ product }: { product: Product }) {
           </div>
 
           <Link
-            href={`/watches/${id}`}
+            href={`/watches/${slug}`} // ✅ slug
             className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
           >
-            VIEW →
+            VER →
           </Link>
         </div>
       </div>
@@ -248,6 +258,5 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 function formatKz(value: number) {
-  // Formato simples (pt-AO). Pode ajustar depois.
   return new Intl.NumberFormat("pt-PT").format(value);
 }
