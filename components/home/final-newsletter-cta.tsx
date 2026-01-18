@@ -17,7 +17,7 @@ export function FinalNewsletterCTA() {
 
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
+    "idle" | "loading" | "success" | "exists" | "error"
   >("idle");
 
   useLayoutEffect(() => {
@@ -53,14 +53,34 @@ export function FinalNewsletterCTA() {
     setStatus("loading");
 
     try {
-      // TODO: ligar ao Supabase (newsletter_subscribers) ou serviço de email
-      await new Promise((r) => setTimeout(r, 700));
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data?.ok) {
+        setStatus("error");
+        setTimeout(() => setStatus("idle"), 2400);
+        return;
+      }
+
+      if (data.status === "exists") {
+        setStatus("exists");
+        // opcional: manter o email no input, ou limpar
+        // setEmail("");
+        setTimeout(() => setStatus("idle"), 2600);
+        return;
+      }
+
       setStatus("success");
       setEmail("");
-      setTimeout(() => setStatus("idle"), 2200);
+      setTimeout(() => setStatus("idle"), 2600);
     } catch {
       setStatus("error");
-      setTimeout(() => setStatus("idle"), 2200);
+      setTimeout(() => setStatus("idle"), 2400);
     }
   };
 
@@ -141,20 +161,57 @@ export function FinalNewsletterCTA() {
                     Ao subscrever, concorda em receber comunicações da Eveul.
                   </span>
 
-                  <span className="text-[color:var(--gold)]/80">
+                  <span
+                    className={[
+                      "transition",
+                      status === "success" ? "text-[color:var(--gold)]" : "",
+                      status === "exists" ? "text-[color:var(--gold)]/85" : "",
+                      status === "error" ? "text-red-300/90" : "",
+                    ].join(" ")}
+                  >
                     {status === "success"
-                      ? "Subscrição confirmada."
-                      : status === "error"
-                      ? "Falha ao subscrever. Tente novamente."
-                      : "Privacidade respeitada."}
+                      ? "Subscrição confirmada. Bem-vindo."
+                      : status === "exists"
+                        ? "Já está na lista. Avisaremos em novos lançamentos."
+                        : status === "error"
+                          ? "Não foi possível. Tente novamente."
+                          : "Privacidade respeitada."}
                   </span>
                 </div>
 
                 {/* Quick links */}
                 <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <QuickLink href="#" label="WHATSAPP" />
+                  <QuickLink
+                    href="https://wa.me/244943670112"
+                    label="WHATSAPP"
+                  />
                   <QuickLink href="#" label="SUPORTE" />
                   <QuickLink href="#" label="VER STOCK" />
+                </div>
+
+                <div
+                  className={[
+                    "mt-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] tracking-[0.22em] backdrop-blur transition",
+                    status === "success"
+                      ? "border-[color:var(--gold)]/35 bg-[color:var(--gold)]/10 text-foreground"
+                      : status === "exists"
+                        ? "border-border bg-card/15 text-muted-foreground"
+                        : status === "error"
+                          ? "border-red-400/30 bg-red-400/10 text-red-200/90"
+                          : "border-border bg-card/10 text-muted-foreground",
+                    status !== "idle"
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-1",
+                  ].join(" ")}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--gold)]/80" />
+                  {status === "success"
+                    ? "SUBSCRIÇÃO CONFIRMADA"
+                    : status === "exists"
+                      ? "JÁ INSCRITO"
+                      : status === "error"
+                        ? "FALHA AO SUBSCREVER"
+                        : "—"}
                 </div>
               </form>
 

@@ -5,6 +5,7 @@ import { FeaturedCollection } from "@/components/home/featured-collection";
 import { BestSellers } from "@/components/home/best-sellers";
 import { CraftsmanshipStory } from "@/components/home/craftsmanship-story";
 import { FinalNewsletterCTA } from "@/components/home/final-newsletter-cta";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       <BestSellers />
       <CraftsmanshipStory />
       <FinalNewsletterCTA />
+      <SiteFooter />
     </main>
   );
 }
