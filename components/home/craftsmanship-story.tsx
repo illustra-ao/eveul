@@ -28,7 +28,7 @@ export function CraftsmanshipStory() {
     const ctx = gsap.context(() => {
       // estado inicial
       gsap.set([headerRef.current, leftRef.current], { autoAlpha: 0, y: 14 });
-      
+      gsap.set(mediaRef.current, { autoAlpha: 0, y: 14, scale: 0.98 });
       gsap.set([mini1Ref.current, mini2Ref.current], { autoAlpha: 0, y: 14 });
       gsap.set(stripRef.current, { autoAlpha: 0, y: 12 });
 
@@ -63,12 +63,22 @@ export function CraftsmanshipStory() {
   const togglePlay = async () => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) {
-      await v.play();
-      setIsPlaying(true);
-    } else {
-      v.pause();
-      setIsPlaying(false);
+
+    try {
+      if (v.paused) {
+        // garantir compatibilidade em mobile
+        v.muted = true;
+        v.playsInline = true;
+        await v.play();
+        setIsPlaying(true);
+      } else {
+        v.pause();
+        setIsPlaying(false);
+      }
+    } catch (err) {
+      // fallback: mostra controls para o user conseguir iniciar manualmente
+      console.error("Video play failed:", err);
+      v.controls = true;
     }
   };
 
@@ -166,6 +176,7 @@ export function CraftsmanshipStory() {
                   muted
                   loop
                   preload="metadata"
+                  onClick={togglePlay}
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}
                 />
