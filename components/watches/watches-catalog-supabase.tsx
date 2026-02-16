@@ -1,57 +1,39 @@
-import { supabaseClient } from "@/lib/supabase/client";
+// components/watches/watches-catalog-supabase.tsx
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { WatchesCatalogClient } from "./watches-catalog.client";
 
-export type ProductRow = {
-  id: string;
-  slug: string;
-  name: string;
-  collection: "Signature" | "Limited" | "Classic";
-  price: number;
-  currency: string;
-  badge: "BEST SELLER" | "LIMITED" | "NEW" | null;
-  description: string | null;
-  highlights: string[];
-  status: "active" | "draft" | "archived";
-};
-
-export type ProductCardVM = {
-  id: string;
-  slug: string;
-  name: string;
-  collection: ProductRow["collection"];
-  price: number;
-  currency: string;
-  badge?: ProductRow["badge"] | undefined;
-  image?: string | undefined;
-};
-
 export async function WatchesCatalogSupabase() {
-  const { data: products, error } = await supabaseClient
+  const { data: products, error } = await supabaseAdmin
     .from("products")
-    .select("id,slug,name,collection,price,currency,badge,status")
+    .select("id,slug,name,collection,price,currency,badge,status,created_at")
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    // em produção: renderizar fallback elegante
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
   const ids = (products ?? []).map((p) => p.id);
 
-  const { data: images } = await supabaseClient
-    .from("product_images")
-    .select("product_id,url,sort_order")
-    .in("product_id", ids)
-    .order("sort_order", { ascending: true });
+  // Evita .in([]) quando não há produtos
+  let images: { product_id: string; url: string; sort_order: number }[] = [];
+  if (ids.length > 0) {
+    const res = await supabaseAdmin
+      .from("product_images")
+      .select("product_id,url,sort_order")
+      .in("product_id", ids)
+      .order("sort_order", { ascending: true });
+
+    if (res.error) throw new Error(res.error.message);
+    images = res.data ?? [];
+  }
 
   const firstImageByProduct = new Map<string, string>();
-  (images ?? []).forEach((img) => {
-    if (!firstImageByProduct.has(img.product_id))
+  for (const img of images) {
+    if (!firstImageByProduct.has(img.product_id)) {
       firstImageByProduct.set(img.product_id, img.url);
-  });
+    }
+  }
 
-  const cards: ProductCardVM[] =
+  const cards =
     (products ?? []).map((p) => ({
       id: p.id,
       slug: p.slug,

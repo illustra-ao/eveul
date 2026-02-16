@@ -13,17 +13,11 @@ type Slide = {
   image: string;
   availableLabel?: string;
 
-  // novos campos (opcionais)
   collection?: string;
-  priceKz?: number;
   specs?: string;
   nextLabel?: string;
+  // price removido do hero (fica para a página do produto)
 };
-
-function formatKz(value?: number) {
-  if (!value) return "";
-  return new Intl.NumberFormat("pt-PT").format(value);
-}
 
 export function EveulHeroCarousel() {
   const slides: Slide[] = useMemo(
@@ -37,7 +31,6 @@ export function EveulHeroCarousel() {
         availableLabel: "DISPONÍVEL",
         nextLabel: "SEGUINTE: EVEUL PARAÍBA",
         collection: "Signature",
-        priceKz: 189000,
         specs: "Open Gear • Caixa em titânio • Vidro de safira",
       },
       {
@@ -49,7 +42,6 @@ export function EveulHeroCarousel() {
         availableLabel: "DISPONÍVEL",
         nextLabel: "SEGUINTE: EVEUL JUPITER",
         collection: "Limited Edition",
-        priceKz: 265000,
         specs: "Open Gear • Tourbillon • Vidro de safira",
       },
     ],
@@ -82,7 +74,6 @@ export function EveulHeroCarousel() {
         onComplete: () => setIsAnimating(false),
       });
 
-      // Exit current
       tl.to(leftCol.current, { autoAlpha: 0, x: -12, duration: 0.32 }, 0);
       tl.to(
         watchWrap.current,
@@ -91,10 +82,8 @@ export function EveulHeroCarousel() {
       );
       tl.to(rightCol.current, { autoAlpha: 0, x: 12, duration: 0.32 }, 0);
 
-      // Swap
       tl.add(() => setIndex(nextIndex));
 
-      // Enter next
       tl.set([leftCol.current, rightCol.current], { x: 0 });
       tl.set(watchWrap.current, { x: -dir * 22 });
 
@@ -106,7 +95,6 @@ export function EveulHeroCarousel() {
     setTimeout(() => ctx.revert(), 1100);
   };
 
-  // Animação inicial
   useLayoutEffect(() => {
     if (!root.current) return;
 
@@ -183,7 +171,6 @@ export function EveulHeroCarousel() {
                 Próximo modelo
               </Button>
 
-              {/* Prev/Next compacto para desktop */}
               <div className="hidden items-center gap-2 md:flex">
                 <button
                   onClick={() => go(-1)}
@@ -226,7 +213,7 @@ export function EveulHeroCarousel() {
             </div>
           </div>
 
-          {/* Right (sem thumb) */}
+          {/* Right (discreto) */}
           <div
             ref={rightCol}
             className="col-span-12 flex flex-col justify-between md:col-span-2 md:items-end"
@@ -236,7 +223,7 @@ export function EveulHeroCarousel() {
                 {current.availableLabel ?? "DISPONÍVEL"}
               </div>
 
-              <div className="w-full rounded-2xl border border-border bg-card/30 p-4 backdrop-blur md:max-w-[240px]">
+              <div className="w-full rounded-2xl border border-border bg-card/25 p-4 backdrop-blur md:max-w-[240px]">
                 <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
                   COLECÇÃO
                 </div>
@@ -244,18 +231,8 @@ export function EveulHeroCarousel() {
                   {current.collection ?? "EVEUL"}
                 </div>
 
-                <div className="mt-4 h-px w-full bg-border/60" />
-
-                <div className="mt-4 text-[11px] tracking-[0.22em] text-muted-foreground">
-                  PREÇO
-                </div>
-                <div className="mt-2 font-[var(--font-display)] text-2xl tracking-tight">
-                  <span className="text-[color:var(--gold)]">Kz</span>{" "}
-                  {formatKz(current.priceKz)}
-                </div>
-
                 <div className="mt-4 flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--gold)]/80" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--gold)]/70" />
                   <span className="text-[11px] tracking-[0.22em] text-muted-foreground">
                     STOCK LIMITADO
                   </span>

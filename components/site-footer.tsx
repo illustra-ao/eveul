@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="relative overflow-hidden border-t border-border">
+    <footer className="relative overflow-hidden border-t border-border mt-6">
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute left-[-140px] bottom-[-180px] h-[520px] w-[520px] rounded-full bg-[color:var(--gold)]/6 blur-[150px]" />
