@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { defaultWhatsAppLink, siteConfig } from "@/lib/site-config";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -181,12 +182,12 @@ export function FinalNewsletterCTA() {
 
                 {/* Quick links */}
                 <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <QuickLink href={defaultWhatsAppLink} label="WHATSAPP" />
                   <QuickLink
-                    href="https://wa.me/244943670112"
-                    label="WHATSAPP"
+                    href={`mailto:${siteConfig.supportEmail}`}
+                    label="SUPORTE"
                   />
-                  <QuickLink href="#" label="SUPORTE" />
-                  <QuickLink href="#" label="VER STOCK" />
+                  <QuickLink href="/watches" label="VER STOCK" />
                 </div>
 
                 <div
@@ -236,9 +237,13 @@ function MiniTag({ children }: { children: React.ReactNode }) {
 }
 
 function QuickLink({ href, label }: { href: string; label: string }) {
+  const isExternal = href.startsWith("http") || href.startsWith("mailto:");
+
   return (
     <a
       href={href}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noreferrer" : undefined}
       className="rounded-full border border-border bg-card/10 px-4 py-2 text-[11px] tracking-[0.22em] text-muted-foreground backdrop-blur hover:bg-card/25 hover:text-foreground"
     >
       {label} →

@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Eveul
 
-## Getting Started
+Loja Next.js para a Eveul, com vitrine publica de relogios, paginas de produto, newsletter, area admin e integracao Supabase para produtos/imagens.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 / React 19
+- Tailwind CSS 4
+- Supabase: produtos, imagens e newsletter
+- GSAP para animacoes editoriais
+- Basic Auth opcional para proteger `/admin` e `/api/admin`
+
+## Como correr localmente
+
+```bash
+npm install
+npm run dev
+```
+
+Abra `http://localhost:3000`.
+
+Sem variaveis Supabase, a loja publica usa um catalogo local de fallback para permitir ver a experiencia completa. A area admin e as rotas de escrita precisam do Supabase configurado.
+
+## Variaveis de ambiente
+
+Crie `.env.local` a partir de `.env.example`.
+
+```bash
+cp .env.example .env.local
+```
+
+Obrigatorias para Supabase:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Recomendadas para deploy:
+
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `KEEPALIVE_TOKEN`
+- `CRON_SECRET` (alternativa usada por crons em deploy)
+
+Em desenvolvimento, se `ADMIN_PASSWORD` estiver vazio, o login local aceita `admin` / `admin`. Em producao, defina sempre uma palavra-passe forte; sem `ADMIN_PASSWORD`, o acesso admin fica bloqueado.
+
+## Supabase
+
+Tabelas esperadas:
+
+- `products`: `id`, `slug`, `name`, `collection`, `price`, `currency`, `badge`, `description`, `highlights`, `status`, `created_at`, `updated_at`
+- `product_images`: `id`, `product_id`, `url`, `path`, `sort_order`, `created_at`
+- `newsletter_subscribers`: `id`, `email`, `source`, `created_at`
+
+Storage bucket esperado:
+
+- `product-images`, publico para leitura das imagens
+
+Valores usados no app:
+
+- `collection`: `Signature`, `Limited`, `Classic`
+- `status`: `active`, `draft`, `archived`
+- `badge`: `BEST SELLER`, `LIMITED`, `NEW`
+
+## Admin
+
+- Lista: `/admin/products`
+- Novo produto: `/admin/products/new`
+- Editar produto: `/admin/products/:id`
+- Login: `/admin/login`
+- Logout: `/admin/logout`
+
+No editor pode alterar dados, publicar/despublicar, arquivar, enviar imagens, definir imagem principal e remover imagens.
+
+## Scripts
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+O projeto esta pronto para Vercel. Configure as variaveis no dashboard da Vercel e confirme que o bucket `product-images` existe no Supabase.

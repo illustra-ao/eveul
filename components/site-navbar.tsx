@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { defaultWhatsAppLink } from "@/lib/site-config";
 import {
   Sheet,
   SheetContent,
@@ -16,8 +17,8 @@ import {
 const nav = [
   { href: "/watches", label: "Relógios" },
   { href: "/about", label: "Sobre" },
-  { href: "/#service", label: "Garantia & Serviço" },
-  { href: "/#stores", label: "Lojas" },
+  { href: "/support", label: "Garantia & Serviço" },
+  { href: "/contact", label: "Contactos" },
 ];
 
 export function SiteNavbar() {
@@ -101,18 +102,21 @@ export function SiteNavbar() {
 
         {/* Right */}
         <div className="flex items-center gap-2">
-          <IconBtn label="Pesquisar">
+          <IconLink href="/watches" label="Pesquisar">
             <Search className="h-4 w-4" />
-          </IconBtn>
-          <IconBtn label="Conta">
+          </IconLink>
+          <IconLink href="/admin/login" label="Admin" prefetch={false}>
             <User className="h-4 w-4" />
-          </IconBtn>
-          <IconBtn label="Carrinho">
+          </IconLink>
+          <IconLink href={defaultWhatsAppLink} label="Comprar pelo WhatsApp" external>
             <ShoppingBag className="h-4 w-4" />
-          </IconBtn>
+          </IconLink>
 
-          <Button className="ml-2 hidden h-10 rounded-full bg-primary px-5 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90 sm:inline-flex">
-            Comprar agora
+          <Button
+            asChild
+            className="ml-2 hidden h-10 rounded-full bg-primary px-5 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90 sm:inline-flex"
+          >
+            <Link href="/watches">Comprar agora</Link>
           </Button>
         </div>
       </div>
@@ -120,19 +124,39 @@ export function SiteNavbar() {
   );
 }
 
-function IconBtn({
+function IconLink({
   children,
+  href,
   label,
+  external,
+  prefetch,
 }: {
   children: React.ReactNode;
+  href: string;
   label: string;
+  external?: boolean;
+  prefetch?: boolean;
 }) {
+  const className =
+    "inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/25 backdrop-blur hover:bg-card/40";
+
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className={className}
+        aria-label={label}
+      >
+        {children}
+      </a>
+    );
+  }
+
   return (
-    <button
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/25 backdrop-blur hover:bg-card/40"
-      aria-label={label}
-    >
+    <Link href={href} prefetch={prefetch} className={className} aria-label={label}>
       {children}
-    </button>
+    </Link>
   );
 }

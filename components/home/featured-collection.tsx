@@ -31,12 +31,15 @@ export function FeaturedCollection() {
             </p>
 
             <div className="mt-8 flex items-center gap-3">
-              <Button className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-                Ver Colecção
+              <Button
+                asChild
+                className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+              >
+                <Link href="/watches">Ver Colecção</Link>
               </Button>
 
               <Link
-                href="#"
+                href="/about"
                 className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
               >
                 EXPLORE DETAILS →
@@ -86,10 +89,11 @@ export function FeaturedCollection() {
 
               <div className="mt-7">
                 <Button
+                  asChild
                   variant="outline"
                   className="h-11 rounded-full border-border bg-card/20 px-6 backdrop-blur hover:bg-card/40"
                 >
-                  Ver Modelo
+                  <Link href="/watches/eveul-goldline">Ver Modelo</Link>
                 </Button>
               </div>
             </div>

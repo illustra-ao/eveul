@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { getPrimaryImage } from "@/lib/products";
+import { buildProductWhatsAppLink, siteConfig } from "@/lib/site-config";
 
 type Spec = { k: string; v: string };
 
@@ -36,12 +38,15 @@ export function WatchProductPage({
 }) {
   const [active, setActive] = useState(0);
 
-  const mainImage = useMemo(() => {
-    const imgs = product.images?.length
-      ? product.images
-      : ["/images/placeholder.jpg"];
-    return imgs[Math.min(active, imgs.length - 1)];
-  }, [active, product.images]);
+  const galleryImages = useMemo(
+    () =>
+      product.images?.length
+        ? product.images
+        : [siteConfig.fallbackProductImage],
+    [product.images],
+  );
+
+  const mainImage = galleryImages[Math.min(active, galleryImages.length - 1)];
 
   return (
     <section className="relative overflow-hidden">
@@ -90,7 +95,7 @@ export function WatchProductPage({
 
               {/* Thumbs */}
               <div className="mt-4 grid grid-cols-4 gap-3">
-                {product.images.slice(0, 4).map((src, i) => (
+                {galleryImages.slice(0, 4).map((src, i) => (
                   <button
                     key={src + i}
                     type="button"
@@ -161,24 +166,30 @@ export function WatchProductPage({
               {/* Actions */}
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button
+                  asChild
                   className="h-12 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
-                  onClick={() => {
-                    // TODO: ligar ao carrinho global
-                    console.log("add_to_cart", product.id);
-                  }}
                 >
-                  Adicionar ao carrinho
+                  <a
+                    href={buildProductWhatsAppLink(product.name)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Reservar no WhatsApp
+                  </a>
                 </Button>
 
                 <Button
+                  asChild
                   variant="outline"
                   className="h-12 rounded-full border-border bg-black/20 px-6 backdrop-blur hover:bg-black/35"
-                  onClick={() => {
-                    // TODO: WhatsApp link real
-                    console.log("whatsapp_interest", product.id);
-                  }}
                 >
-                  Falar no WhatsApp
+                  <a
+                    href={buildProductWhatsAppLink(product.name)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Falar no WhatsApp
+                  </a>
                 </Button>
               </div>
 
@@ -284,7 +295,7 @@ function QuickLink({ href, label }: { href: string; label: string }) {
 }
 
 function RelatedCard({ p }: { p: WatchProduct }) {
-  const img = p.images?.[0] ?? "/images/placeholder.jpg";
+  const img = getPrimaryImage(p.images);
 
   return (
     <article className="group relative overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur">
@@ -301,6 +312,7 @@ function RelatedCard({ p }: { p: WatchProduct }) {
           alt={p.name}
           fill
           className="object-cover transition duration-700 group-hover:scale-[1.03]"
+          unoptimized
         />
       </div>
 

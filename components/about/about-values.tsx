@@ -76,7 +76,7 @@ export function AboutValues() {
             </div>
 
             <Link
-              href="/"
+              href="/watches"
               className="rounded-full border border-[color:var(--gold)]/35 bg-[color:var(--gold)]/10 px-6 py-3 text-xs tracking-[0.22em] text-foreground hover:bg-[color:var(--gold)]/15"
             >
               VER RELÓGIOS →

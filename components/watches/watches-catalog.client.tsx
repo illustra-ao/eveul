@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  buildProductWhatsAppLink,
+  defaultWhatsAppLink,
+  siteConfig,
+} from "@/lib/site-config";
 import type { ProductCardVM } from "./watches-catalog-supabase";
 
 type Filter = "Todos" | "Signature" | "Limited" | "Classic";
@@ -135,7 +140,7 @@ export function WatchesCatalogClient({
               <div className="relative aspect-[4/5] w-full overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/65" />
                 <Image
-                  src={p.image ?? "/images/placeholder.jpg"}
+                  src={p.image ?? siteConfig.fallbackProductImage}
                   alt={p.name}
                   fill
                   className="object-cover transition duration-700 group-hover:scale-[1.03]"
@@ -174,8 +179,17 @@ export function WatchesCatalogClient({
                   >
                     <Link href={`/watches/${p.slug}`}>Detalhes</Link>
                   </Button>
-                  <Button className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:opacity-90">
-                    + Carrinho
+                  <Button
+                    asChild
+                    className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:opacity-90"
+                  >
+                    <a
+                      href={buildProductWhatsAppLink(p.name)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Reservar
+                    </a>
                   </Button>
                 </div>
               </div>
@@ -188,6 +202,28 @@ export function WatchesCatalogClient({
             Nenhum modelo encontrado. Ajuste o filtro ou a pesquisa.
           </div>
         )}
+
+        <div className="mt-14 rounded-4xl border border-border bg-card/15 p-8 backdrop-blur md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
+                PRECISA DE AJUDA A ESCOLHER?
+              </div>
+              <div className="mt-2 font-[var(--font-display)] text-2xl tracking-tight">
+                Fale connosco para recomendações por estilo e orçamento.
+              </div>
+            </div>
+
+            <Button
+              asChild
+              className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+            >
+              <a href={defaultWhatsAppLink} target="_blank" rel="noreferrer">
+                WhatsApp
+              </a>
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   );

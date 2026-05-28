@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { AdminProductEditorClient } from "@/components/admin/admin-product-editor-client";
 
+export const dynamic = "force-dynamic";
 
 export default async function AdminProductEditPage({
   params,

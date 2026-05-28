@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { buildProductWhatsAppLink, defaultWhatsAppLink } from "@/lib/site-config";
 
 type Product = {
   id: string;
@@ -194,8 +195,13 @@ export function WatchesCatalog() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <Button className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-                WhatsApp
+              <Button
+                asChild
+                className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+              >
+                <a href={defaultWhatsAppLink} target="_blank" rel="noreferrer">
+                  WhatsApp
+                </a>
               </Button>
               <Link
                 href="/about"
@@ -297,10 +303,16 @@ function ProductCard({ product }: { product: Product }) {
           </Button>
 
           <Button
+            asChild
             className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:opacity-90"
-            onClick={() => console.log("add to cart", id)}
           >
-            + Carrinho
+            <a
+              href={buildProductWhatsAppLink(name)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Reservar
+            </a>
           </Button>
         </div>
       </div>

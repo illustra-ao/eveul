@@ -4,6 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { buildProductWhatsAppLink } from "@/lib/site-config";
 
 export type ProductCardVM = {
   id: string;
@@ -24,7 +25,7 @@ function formatKz(value: number) {
 export function BestSellersClient({ products }: { products: ProductCardVM[] }) {
   return (
     <section
-      id="watches"
+      id="best-sellers"
       className="relative overflow-hidden border-t border-border"
     >
       {/* fundo subtil */}
@@ -125,17 +126,8 @@ function Pill({
 }
 
 function ProductCard({ product }: { product: ProductCardVM }) {
-  const {
-    id,
-    slug,
-    name,
-    collection,
-    price,
-    currency = "Kz",
-    image,
-    imageHover,
-    badge,
-  } = product;
+  const { slug, name, collection, price, currency = "Kz", image, imageHover, badge } =
+    product;
 
   return (
     <article className="group relative overflow-hidden rounded-3xl border border-border bg-card/20 backdrop-blur">
@@ -177,13 +169,16 @@ function ProductCard({ product }: { product: ProductCardVM }) {
             </Button>
 
             <Button
+              asChild
               className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:opacity-90"
-              onClick={() => {
-                // TODO: integrar com carrinho global
-                console.log("add to cart", id);
-              }}
             >
-              + Carrinho
+              <a
+                href={buildProductWhatsAppLink(name)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Reservar
+              </a>
             </Button>
           </div>
         </div>

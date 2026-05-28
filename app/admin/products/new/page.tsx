@@ -9,6 +9,8 @@ type Collection = "Signature" | "Limited" | "Classic";
 type Status = "active" | "draft" | "archived";
 type Badge = "BEST SELLER" | "LIMITED" | "NEW" | "";
 
+export const dynamic = "force-dynamic";
+
 function slugify(input: string) {
   return input
     .trim()

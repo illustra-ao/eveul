@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ type Slide = {
   code: string;
   titleLines: string[];
   image: string;
+  href: string;
   availableLabel?: string;
 
   collection?: string;
@@ -28,6 +30,7 @@ export function EveulHeroCarousel() {
         code: "EV-2043-02",
         titleLines: ["SPACE", "TIMER", "JUPITER"],
         image: "/images/eveul3.png",
+        href: "/watches/eveul-jupiter",
         availableLabel: "DISPONÍVEL",
         nextLabel: "SEGUINTE: EVEUL PARAÍBA",
         collection: "Signature",
@@ -39,6 +42,7 @@ export function EveulHeroCarousel() {
         code: "EV-3123-PABL",
         titleLines: ["OPEN GEAR", "FLYING", "TOURBILLON", "PARAÍBA"],
         image: "/images/eveul2.png",
+        href: "/watches/eveul-paraiba",
         availableLabel: "DISPONÍVEL",
         nextLabel: "SEGUINTE: EVEUL JUPITER",
         collection: "Limited Edition",
@@ -158,8 +162,11 @@ export function EveulHeroCarousel() {
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-                Ver detalhes
+              <Button
+                asChild
+                className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+              >
+                <Link href={current.href}>Ver detalhes</Link>
               </Button>
 
               <Button

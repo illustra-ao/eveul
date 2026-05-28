@@ -45,6 +45,13 @@ export function ProductRowActions({
         EDITAR →
       </Link>
 
+      <Link
+        href={`/watches/${slug}`}
+        className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground px-2"
+      >
+        VER →
+      </Link>
+
       <button
         type="button"
         disabled={isPending}

@@ -4,6 +4,51 @@ import { SiteNavbar } from "@/components/site-navbar";
 import { SiteFooter } from "@/components/site-footer";
 import { ProductRowActions } from "@/components/admin/product-row-actions";
 
+export const dynamic = "force-dynamic";
+
+function AdminSetupState({ message }: { message: string }) {
+  return (
+    <main className="relative">
+      <SiteNavbar />
+      <div className="pt-24">
+        <section className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="rounded-4xl border border-border bg-card/15 p-8 backdrop-blur md:p-10">
+            <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
+              ADMIN
+            </div>
+            <h1 className="mt-4 font-[var(--font-display)] text-4xl tracking-tight">
+              Supabase ainda não configurado.
+            </h1>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              O login está activo, mas a área de produtos precisa das variáveis
+              `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e
+              `SUPABASE_SERVICE_ROLE_KEY` no ambiente.
+            </p>
+            <div className="mt-6 rounded-2xl border border-border bg-black/15 p-4 text-sm text-muted-foreground">
+              {message}
+            </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/"
+                className="rounded-full border border-border bg-card/10 px-5 py-3 text-xs tracking-[0.18em] text-foreground backdrop-blur hover:bg-card/20"
+              >
+                VOLTAR À LOJA
+              </Link>
+              <Link
+                href="/admin/logout"
+                className="rounded-full bg-primary px-5 py-3 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
+              >
+                SAIR
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+      <SiteFooter />
+    </main>
+  );
+}
+
 function Meta({
   label,
   value,
@@ -31,19 +76,39 @@ function Meta({
 }
 
 export default async function AdminProductsPage() {
-  const { data, error } = await supabaseAdmin
-    .from("products")
-    .select("id,slug,name,collection,price,currency,status,created_at")
-    .order("created_at", { ascending: false });
+  let data:
+    | {
+        id: string;
+        slug: string;
+        name: string;
+        collection: string;
+        price: number;
+        currency: string;
+        status: "active" | "draft" | "archived";
+        created_at: string;
+      }[]
+    | null = null;
 
-  if (error) throw new Error(error.message);
+  try {
+    const result = await supabaseAdmin
+      .from("products")
+      .select("id,slug,name,collection,price,currency,status,created_at")
+      .order("created_at", { ascending: false });
+
+    if (result.error) throw new Error(result.error.message);
+    data = result.data;
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Erro ao ligar ao Supabase.";
+    return <AdminSetupState message={message} />;
+  }
 
   return (
     <main className="relative">
       <SiteNavbar />
       <div className="pt-24">
         <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-          <div className="flex items-end justify-between gap-6">
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
                 ADMIN
@@ -56,12 +121,20 @@ export default async function AdminProductsPage() {
               </p>
             </div>
 
-            <Link
-              href="/admin/products/new"
-              className="rounded-full bg-primary px-5 py-3 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
-            >
-              NOVO PRODUTO
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/admin/products/new"
+                className="rounded-full bg-primary px-5 py-3 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
+              >
+                NOVO PRODUTO
+              </Link>
+              <Link
+                href="/admin/logout"
+                className="rounded-full border border-border bg-card/10 px-5 py-3 text-xs tracking-[0.18em] text-muted-foreground backdrop-blur hover:bg-card/20 hover:text-foreground"
+              >
+                SAIR
+              </Link>
+            </div>
           </div>
 
           <div className="mt-8 overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur">

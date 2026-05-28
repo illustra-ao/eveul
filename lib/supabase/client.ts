@@ -1,7 +1,33 @@
 // lib/supabase/client.ts
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export const supabaseClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+let browserSafeClient: SupabaseClient | null = null;
+
+function requireEnv(name: string) {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `${name} nao esta configurada. Veja .env.example para preparar o Supabase.`,
+    );
+  }
+  return value;
+}
+
+export function getSupabaseClient() {
+  if (!browserSafeClient) {
+    browserSafeClient = createClient(
+      requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+      requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    );
+  }
+
+  return browserSafeClient;
+}
+
+export const supabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    const client = getSupabaseClient();
+    const value = Reflect.get(client, prop, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});

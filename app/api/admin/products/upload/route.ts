@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true, url, path });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ ok: false, message: "Erro inesperado." }, { status: 500 });
   }
 }

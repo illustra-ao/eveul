@@ -2,6 +2,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -77,7 +78,7 @@ export function CraftsmanshipStory() {
       }
     } catch (err) {
       // fallback: mostra controls para o user conseguir iniciar manualmente
-      console.error("Video play failed:", err);
+      void err;
       v.controls = true;
     }
   };
@@ -148,13 +149,19 @@ export function CraftsmanshipStory() {
             </div>
 
             <div className="mt-10 flex items-center gap-3">
-              <Button className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-                Ver o Processo
+              <Button
+                asChild
+                className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+              >
+                <Link href="/about#process">Ver o Processo</Link>
               </Button>
 
-              <button className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground">
+              <Link
+                href="/about"
+                className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
+              >
                 LEARN MORE →
-              </button>
+              </Link>
             </div>
           </div>
 

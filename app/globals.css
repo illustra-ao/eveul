@@ -53,6 +53,8 @@
 /* Base tokens (mantemos claro, mas o projecto deve correr em .dark por padrão) */
 :root {
   --radius: 0.75rem;
+  --font-sans: "Manrope", "Segoe UI", Arial, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 
   /* Neutros */
   --background: oklch(0.985 0 0);

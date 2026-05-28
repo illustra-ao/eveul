@@ -4,6 +4,7 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export function AboutHero() {
@@ -57,8 +58,11 @@ export function AboutHero() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-                Ver Colecção
+              <Button
+                asChild
+                className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+              >
+                <Link href="/watches">Ver Colecção</Link>
               </Button>
               <a
                 href="#process"

@@ -246,6 +246,12 @@ export function AdminProductEditorClient({
           >
             Voltar
           </Link>
+          <Link
+            href="/admin/logout"
+            className="h-11 inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-6 text-xs tracking-[0.18em] text-muted-foreground backdrop-blur hover:bg-card/20 hover:text-foreground"
+          >
+            Sair
+          </Link>
           <Button
             className="h-11 rounded-full bg-primary px-6 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
             onClick={save}

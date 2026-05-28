@@ -1,9 +1,36 @@
 // lib/supabase/admin.ts
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+let adminClient: SupabaseClient | null = null;
 
-export const supabaseAdmin = createClient(url, serviceRole, {
-  auth: { persistSession: false },
+function requireEnv(name: string) {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `${name} nao esta configurada. Veja .env.example para preparar o Supabase.`,
+    );
+  }
+  return value;
+}
+
+export function getSupabaseAdmin() {
+  if (!adminClient) {
+    adminClient = createClient(
+      requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+      requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      {
+        auth: { persistSession: false },
+      },
+    );
+  }
+
+  return adminClient;
+}
+
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    const client = getSupabaseAdmin();
+    const value = Reflect.get(client, prop, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
 });

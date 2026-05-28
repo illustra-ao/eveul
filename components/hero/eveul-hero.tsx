@@ -2,6 +2,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { Button } from "@/components/ui/button";
@@ -108,8 +109,11 @@ export function EveulHero() {
           </h1>
 
           <div className="mt-8">
-            <Button className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-              FIND OUT MORE
+            <Button
+              asChild
+              className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+            >
+              <Link href="/watches/eveul-jupiter">FIND OUT MORE</Link>
             </Button>
           </div>
 

@@ -2,6 +2,10 @@
 "use client";
 
 import Link from "next/link";
+import {
+  defaultWhatsAppLink,
+  siteConfig,
+} from "@/lib/site-config";
 
 export function SiteFooter() {
   return (
@@ -33,26 +37,26 @@ export function SiteFooter() {
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
               <FooterCol title="Colecção">
                 <FooterLink href="/watches">Relógios</FooterLink>
-                <FooterLink href="#best-sellers">Best Sellers</FooterLink>
-                <FooterLink href="#craftsmanship">Craftsmanship</FooterLink>
+                <FooterLink href="/#best-sellers">Best Sellers</FooterLink>
+                <FooterLink href="/#craftsmanship">Craftsmanship</FooterLink>
               </FooterCol>
 
               <FooterCol title="Apoio">
-                <FooterLink href="#service">Garantia & Serviço</FooterLink>
-                <FooterLink href="#">Envios & Devoluções</FooterLink>
-                <FooterLink href="#">FAQs</FooterLink>
+                <FooterLink href="/support">Garantia & Serviço</FooterLink>
+                <FooterLink href="/shipping">Envios & Devoluções</FooterLink>
+                <FooterLink href="/faq">FAQs</FooterLink>
               </FooterCol>
 
               <FooterCol title="Empresa">
                 <FooterLink href="/about">Sobre</FooterLink>
-                <FooterLink href="#">Lojas</FooterLink>
-                <FooterLink href="#">Contactos</FooterLink>
+                <FooterLink href="/watches">Stock</FooterLink>
+                <FooterLink href="/contact">Contactos</FooterLink>
               </FooterCol>
 
               <FooterCol title="Social">
-                <FooterLink href="#">Instagram</FooterLink>
-                <FooterLink href="#">WhatsApp</FooterLink>
-                <FooterLink href="#">TikTok</FooterLink>
+                <FooterLink href={defaultWhatsAppLink}>WhatsApp</FooterLink>
+                <FooterLink href={`mailto:${siteConfig.supportEmail}`}>Email</FooterLink>
+                <FooterLink href="/#newsletter">Newsletter</FooterLink>
               </FooterCol>
             </div>
 
@@ -64,12 +68,16 @@ export function SiteFooter() {
                   </div>
                   <div className="mt-2 text-sm">
                     <span className="text-muted-foreground">Email:</span>{" "}
-                    <span className="text-foreground">support@eveul.ao</span>
+                    <span className="text-foreground">
+                      {siteConfig.supportEmail}
+                    </span>
                     <span className="mx-2 text-muted-foreground">•</span>
                     <span className="text-muted-foreground">
                       WhatsApp:
                     </span>{" "}
-                    <span className="text-foreground">+244 9XX XXX XXX</span>
+                    <span className="text-foreground">
+                      {siteConfig.whatsappDisplay}
+                    </span>
                   </div>
                 </div>
 
@@ -85,13 +93,13 @@ export function SiteFooter() {
         <div className="mt-12 flex flex-col gap-4 border-t border-border pt-8 text-[11px] tracking-[0.22em] text-muted-foreground md:flex-row md:items-center md:justify-between">
           <div>© {new Date().getFullYear()} EVEUL. ALL RIGHTS RESERVED.</div>
           <div className="flex flex-wrap items-center gap-4">
-            <Link className="hover:text-foreground" href="#">
+            <Link className="hover:text-foreground" href="/terms">
               TERMS
             </Link>
-            <Link className="hover:text-foreground" href="#">
+            <Link className="hover:text-foreground" href="/privacy">
               PRIVACY
             </Link>
-            <Link className="hover:text-foreground" href="#">
+            <Link className="hover:text-foreground" href="/cookies">
               COOKIES
             </Link>
           </div>
@@ -125,11 +133,19 @@ function FooterLink({
   href: string;
   children: React.ReactNode;
 }) {
+  const className =
+    "text-xs tracking-[0.14em] text-muted-foreground hover:text-foreground";
+
+  if (href.startsWith("http") || href.startsWith("mailto:")) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={className}>
+        {children}
+      </a>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      className="text-xs tracking-[0.14em] text-muted-foreground hover:text-foreground"
-    >
+    <Link href={href} className={className}>
       {children}
     </Link>
   );
