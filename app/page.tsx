@@ -1,20 +1,32 @@
 import { Suspense } from "react";
+import nextDynamic from "next/dynamic";
 import { SiteNavbar } from "@/components/site-navbar";
 import { EveulHeroCarousel } from "@/components/hero/eveul-hero-carousel";
 import { FeaturedCollection } from "@/components/home/featured-collection";
 import { BestSellers } from "@/components/home/best-sellers";
-import { CraftsmanshipStory } from "@/components/home/craftsmanship-story";
 import { FinalNewsletterCTA } from "@/components/home/final-newsletter-cta";
 import { SiteFooter } from "@/components/site-footer";
 import { getHeroCarouselSlides } from "@/lib/hero-carousel-data";
 
 export const dynamic = "force-dynamic";
 
+const CraftsmanshipStory = nextDynamic(
+  () =>
+    import("@/components/home/craftsmanship-story").then(
+      (mod) => mod.CraftsmanshipStory,
+    ),
+  {
+    loading: () => (
+      <section className="mobile-content-auto border-t border-border py-12 sm:py-16" />
+    ),
+  },
+);
+
 function BestSellersLoading() {
   return (
     <section
       id="best-sellers"
-      className="relative overflow-hidden border-t border-border"
+      className="mobile-content-auto relative overflow-hidden border-t border-border"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/80" />
       <div className="relative mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">

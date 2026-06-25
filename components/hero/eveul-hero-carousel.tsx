@@ -15,25 +15,35 @@ export function EveulHeroCarousel({
 }: {
   slides?: HeroCarouselSlide[];
 }) {
-
   const root = useRef<HTMLElement | null>(null);
   const leftCol = useRef<HTMLDivElement | null>(null);
   const watchWrap = useRef<HTMLDivElement | null>(null);
   const rightCol = useRef<HTMLDivElement | null>(null);
+  const touchStartX = useRef<number | null>(null);
 
   const [index, setIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const current = slides[index] ?? defaultHeroCarouselSlides[0];
+  const canAnimate = () =>
+    typeof window === "undefined" ||
+    (!window.matchMedia("(max-width: 767px)").matches &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   const go = (dir: 1 | -1) => {
-    if (isAnimating) return;
+    if (isAnimating || slides.length <= 1) return;
     const nextIndex = (index + dir + slides.length) % slides.length;
     animateTo(nextIndex, dir);
   };
 
   const animateTo = (nextIndex: number, dir: 1 | -1) => {
     if (!root.current) return;
+
+    if (!canAnimate()) {
+      setIndex(nextIndex);
+      return;
+    }
+
     setIsAnimating(true);
 
     const ctx = gsap.context(() => {
@@ -66,6 +76,8 @@ export function EveulHeroCarousel({
   useLayoutEffect(() => {
     if (!root.current) return;
 
+    if (!canAnimate()) return;
+
     const ctx = gsap.context(() => {
       gsap.set([leftCol.current, rightCol.current], { autoAlpha: 0, y: 12 });
       gsap.set(watchWrap.current, { autoAlpha: 0, scale: 0.985, y: 18 });
@@ -88,24 +100,44 @@ export function EveulHeroCarousel({
     return () => ctx.revert();
   }, []);
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
+    if (touchStartX.current === null) return;
+
+    const endX = event.changedTouches[0]?.clientX ?? touchStartX.current;
+    const distance = endX - touchStartX.current;
+    touchStartX.current = null;
+
+    if (Math.abs(distance) < 44) return;
+    go(distance < 0 ? 1 : -1);
+  };
+
   return (
-    <section ref={root} className="relative min-h-[92vh] overflow-hidden">
+    <section
+      ref={root}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative min-h-[100svh] overflow-hidden md:min-h-[92vh]"
+    >
       {/* Background */}
       <div className="absolute inset-0 bg-background" />
       <div className="absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[color:var(--gold)]/10 blur-[120px]" />
-        <div className="absolute -right-56 top-10 h-[620px] w-[620px] rounded-full bg-white/5 blur-[140px]" />
+        <div className="absolute -left-24 -top-24 h-[300px] w-[300px] rounded-full bg-[color:var(--gold)]/8 blur-[90px] md:-left-40 md:-top-40 md:h-[520px] md:w-[520px] md:bg-[color:var(--gold)]/10 md:blur-[120px]" />
+        <div className="hidden absolute -right-56 top-10 h-[620px] w-[620px] rounded-full bg-white/5 blur-[140px] md:block" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/80" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 pb-12">
-        <div className="grid grid-cols-12 gap-6 md:gap-8">
+      <div className="relative mx-auto w-full max-w-7xl px-4 pb-8 pt-24 sm:px-6 sm:pb-12 sm:pt-28 lg:px-8">
+        <div className="grid grid-cols-12 gap-5 md:gap-8">
           {/* Left */}
           <div
             ref={leftCol}
             className="col-span-12 flex flex-col justify-center md:col-span-4"
           >
-            <div className="mb-6 inline-flex w-fit items-center rounded-full border border-border bg-card/35 px-4 py-2 text-[11px] tracking-[0.22em] text-muted-foreground backdrop-blur">
+            <div className="mb-5 inline-flex w-fit items-center rounded-full border border-border bg-card/35 px-3 py-2 text-[10px] tracking-[0.18em] text-muted-foreground md:px-4 md:text-[11px] md:tracking-[0.22em] md:backdrop-blur">
               {current.badge}
             </div>
 
@@ -113,7 +145,7 @@ export function EveulHeroCarousel({
               {current.code}
             </div>
 
-            <h1 className="mt-4 font-[var(--font-display)] text-5xl leading-[0.95] tracking-tight md:text-6xl">
+            <h1 className="mt-4 font-[var(--font-display)] text-4xl leading-[0.95] tracking-tight sm:text-5xl md:text-6xl">
               {current.titleLines.map((l) => (
                 <span key={l} className="block">
                   {l}
@@ -121,21 +153,21 @@ export function EveulHeroCarousel({
               ))}
             </h1>
 
-            <div className="mt-6 text-sm leading-7 text-muted-foreground">
+            <div className="mt-5 text-sm leading-7 text-muted-foreground md:mt-6">
               {current.specs ?? "Open Gear • Caixa premium • Vidro de safira"}
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center md:mt-8">
               <Button
                 asChild
-                className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+                className="h-11 w-full rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90 sm:w-auto"
               >
                 <Link href={current.href}>Ver detalhes</Link>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-11 rounded-full border-border bg-card/20 px-6 backdrop-blur hover:bg-card/35"
+                className="h-11 w-full rounded-full border-border bg-card/20 px-6 hover:bg-card/35 sm:w-auto md:backdrop-blur"
                 onClick={() => go(1)}
                 disabled={isAnimating}
               >
@@ -162,7 +194,7 @@ export function EveulHeroCarousel({
               </div>
             </div>
 
-            <div className="mt-10 text-[11px] tracking-[0.22em] text-muted-foreground">
+            <div className="mt-7 text-[10px] leading-5 tracking-[0.18em] text-muted-foreground md:mt-10 md:text-[11px] md:tracking-[0.22em]">
               ENVIO 24–72H (LUANDA) • GARANTIA 12 MESES • PAGAMENTO APPYPAY
             </div>
           </div>
@@ -171,14 +203,15 @@ export function EveulHeroCarousel({
           <div className="relative col-span-12 flex items-center justify-center md:col-span-6">
             <div
               ref={watchWrap}
-              className="relative h-[380px] w-[380px] sm:h-[420px] sm:w-[420px] md:h-[560px] md:w-[560px]"
+              className="relative h-[72vw] min-h-[230px] w-[72vw] min-w-[230px] max-h-[320px] max-w-[320px] sm:h-[420px] sm:w-[420px] sm:max-h-none sm:max-w-none md:h-[560px] md:w-[560px]"
             >
-              <div className="absolute inset-0 rounded-full bg-[color:var(--gold)]/10 blur-[84px]" />
+              <div className="absolute inset-0 rounded-full bg-[color:var(--gold)]/8 blur-[64px] md:bg-[color:var(--gold)]/10 md:blur-[84px]" />
               <Image
                 src={current.image}
                 alt={`Eveul ${current.id}`}
                 fill
-                sizes="(min-width: 768px) 560px, (min-width: 640px) 420px, 380px"
+                sizes="(min-width: 768px) 560px, (min-width: 640px) 420px, 72vw"
+                quality={76}
                 className="object-contain drop-shadow-2xl"
                 priority
               />
@@ -188,7 +221,7 @@ export function EveulHeroCarousel({
           {/* Right (discreto) */}
           <div
             ref={rightCol}
-            className="col-span-12 flex flex-col justify-between md:col-span-2 md:items-end"
+            className="hidden flex-col justify-between md:col-span-2 md:flex md:items-end"
           >
             <div className="flex w-full flex-col items-start gap-3 md:items-end">
               <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">

@@ -26,22 +26,22 @@ export function BestSellersClient({ products }: { products: ProductCardVM[] }) {
   return (
     <section
       id="best-sellers"
-      className="relative overflow-hidden border-t border-border"
+      className="mobile-content-auto relative overflow-hidden border-t border-border"
     >
       {/* fundo subtil */}
       <div className="absolute inset-0">
-        <div className="absolute -right-24 -top-24 h-[360px] w-[360px] rounded-full bg-[color:var(--gold)]/6 blur-[120px] md:-right-44 md:-top-32 md:h-[520px] md:w-[520px] md:blur-[140px]" />
+        <div className="hidden absolute -right-24 -top-24 h-[360px] w-[360px] rounded-full bg-[color:var(--gold)]/6 blur-[120px] md:-right-44 md:-top-32 md:block md:h-[520px] md:w-[520px] md:blur-[140px]" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/80" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
         {/* Header */}
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-xl">
             <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
               BEST SELLERS
             </div>
-            <h2 className="mt-4 font-[var(--font-display)] text-4xl leading-[1.05] tracking-tight md:text-5xl">
+            <h2 className="mt-4 font-[var(--font-display)] text-3xl leading-[1.05] tracking-tight sm:text-4xl md:text-5xl">
               As peças mais procuradas da Eveul.
             </h2>
             <p className="mt-5 text-sm leading-7 text-muted-foreground">
@@ -51,7 +51,7 @@ export function BestSellersClient({ products }: { products: ProductCardVM[] }) {
           </div>
 
           {/* filtro estético */}
-          <div className="flex items-center gap-2">
+          <div className="-mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
             <Pill active>Todos</Pill>
             <Pill>Signature</Pill>
             <Pill>Limited</Pill>
@@ -64,7 +64,7 @@ export function BestSellersClient({ products }: { products: ProductCardVM[] }) {
             Ainda não há produtos publicados (status: <b>active</b>).
           </div>
         ) : (
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="-mx-4 mt-10 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -72,7 +72,7 @@ export function BestSellersClient({ products }: { products: ProductCardVM[] }) {
         )}
 
         {/* Footer CTA */}
-        <div className="mt-12 flex flex-col items-start justify-between gap-6 rounded-3xl border border-border bg-card/20 p-8 backdrop-blur md:flex-row md:items-center">
+        <div className="mt-10 flex flex-col items-start justify-between gap-6 rounded-3xl border border-border bg-card/20 p-6 md:mt-12 md:flex-row md:items-center md:p-8 md:backdrop-blur">
           <div>
             <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
               QUER VER A COLECÇÃO COMPLETA?
@@ -82,10 +82,10 @@ export function BestSellersClient({ products }: { products: ProductCardVM[] }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             <Button
               asChild
-              className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+              className="h-11 w-full rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90 sm:w-auto"
             >
               <Link href="/watches">Ver Todos os Relógios</Link>
             </Button>
@@ -130,7 +130,7 @@ function ProductCard({ product }: { product: ProductCardVM }) {
     product;
 
   return (
-    <article className="group relative overflow-hidden rounded-3xl border border-border bg-card/20 backdrop-blur">
+    <article className="group relative min-w-[78vw] snap-start overflow-hidden rounded-3xl border border-border bg-card/20 sm:min-w-0 md:backdrop-blur">
       {badge && (
         <div className="absolute left-4 top-4 z-10 rounded-full border border-border bg-black/30 px-3 py-1 text-[10px] tracking-[0.22em] text-[color:var(--gold)] backdrop-blur">
           {badge}
@@ -156,11 +156,11 @@ function ProductCard({ product }: { product: ProductCardVM }) {
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
             quality={68}
-            className="object-cover opacity-0 transition duration-700 group-hover:opacity-100"
+            className="hidden object-cover opacity-0 transition duration-700 group-hover:opacity-100 sm:block"
           />
         )}
 
-        <div className="absolute bottom-4 left-4 right-4 translate-y-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="absolute bottom-4 left-4 right-4 translate-y-0 opacity-100 transition duration-300 sm:translate-y-3 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
           <div className="flex gap-2">
             <Button
               variant="outline"

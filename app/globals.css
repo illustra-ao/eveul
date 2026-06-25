@@ -147,8 +147,33 @@
     @apply bg-background text-foreground;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   /* Opcional: aparência premium de selecção */
   ::selection {
     background: color-mix(in oklch, var(--gold) 30%, transparent);
+  }
+}
+
+@layer utilities {
+  @media (max-width: 767px) {
+    .mobile-content-auto {
+      content-visibility: auto;
+      contain-intrinsic-size: 900px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }

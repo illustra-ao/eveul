@@ -26,6 +26,13 @@ export function CraftsmanshipStory() {
   useLayoutEffect(() => {
     if (!root.current) return;
 
+    if (
+      window.matchMedia("(max-width: 767px)").matches ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
     const ctx = gsap.context(() => {
       // estado inicial
       gsap.set([headerRef.current, leftRef.current], { autoAlpha: 0, y: 14 });
@@ -87,16 +94,16 @@ export function CraftsmanshipStory() {
     <section
       ref={root}
       id="craftsmanship"
-      className="relative overflow-hidden border-t border-border"
+      className="mobile-content-auto relative overflow-hidden border-t border-border"
     >
       {/* Background */}
       <div className="absolute inset-0">
-        <div className="absolute -left-44 top-10 h-[520px] w-[520px] rounded-full bg-[color:var(--gold)]/7 blur-[150px]" />
-        <div className="absolute -right-56 -top-20 h-[620px] w-[620px] rounded-full bg-white/5 blur-[170px]" />
+        <div className="hidden absolute -left-44 top-10 h-[520px] w-[520px] rounded-full bg-[color:var(--gold)]/7 blur-[150px] md:block" />
+        <div className="hidden absolute -right-56 -top-20 h-[620px] w-[620px] rounded-full bg-white/5 blur-[170px] md:block" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/85" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
         {/* Header line */}
         <div
           ref={headerRef}
@@ -118,7 +125,7 @@ export function CraftsmanshipStory() {
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10">
           {/* Left: Copy */}
           <div ref={leftRef} className="md:col-span-5">
-            <h2 className="font-[var(--font-display)] text-4xl leading-[1.05] tracking-tight md:text-5xl">
+            <h2 className="font-[var(--font-display)] text-3xl leading-[1.05] tracking-tight sm:text-4xl md:text-5xl">
               Detalhe visível.
               <br />
               Precisão sentida.
@@ -182,7 +189,7 @@ export function CraftsmanshipStory() {
                   playsInline
                   muted
                   loop
-                  preload="metadata"
+              preload="none"
                   onClick={togglePlay}
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}
@@ -299,7 +306,7 @@ function MiniCard({
   return (
     <article
       ref={refEl as React.RefObject<HTMLElement>}
-      className="group relative overflow-hidden rounded-3xl border border-border bg-card/20 backdrop-blur"
+      className="group relative overflow-hidden rounded-3xl border border-border bg-card/20 md:backdrop-blur"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         <Image
