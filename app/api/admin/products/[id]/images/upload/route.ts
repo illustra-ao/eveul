@@ -1,8 +1,11 @@
 // app/api/admin/products/[id]/images/upload/route.ts
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-
-const BUCKET = "product-images";
+import {
+  deleteProductImage,
+  uploadProductImage,
+  validateProductImageFile,
+} from "@/lib/storage/product-images";
 
 export async function POST(
   req: Request,
@@ -22,33 +25,15 @@ export async function POST(
       );
     }
 
-    const ext = file.name.split(".").pop() || "jpg";
-    const safeSlug = slug || productId;
-    const filename = `${crypto.randomUUID()}.${ext}`;
-    const path = `${safeSlug}/${filename}`;
-
-    // upload
-    const { error: upErr } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .upload(path, file, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: file.type || "image/jpeg",
-      });
-
-    if (upErr) {
+    const validationError = validateProductImageFile(file);
+    if (validationError) {
       return NextResponse.json(
-        { ok: false, message: upErr.message },
-        { status: 500 }
+        { ok: false, message: validationError },
+        { status: 400 }
       );
     }
 
-    // public url
-    const { data: publicData } = supabaseAdmin.storage
-      .from(BUCKET)
-      .getPublicUrl(path);
-
-    const url = publicData.publicUrl;
+    const storedImage = await uploadProductImage({ file, productId, slug });
 
     // sort_order: último + 1
     const { data: last } = await supabaseAdmin
@@ -66,8 +51,8 @@ export async function POST(
       .from("product_images")
       .insert({
         product_id: productId,
-        url,
-        path,
+        url: storedImage.url,
+        path: storedImage.path,
         sort_order: nextOrder,
       })
       .select("id,product_id,url,path,sort_order,created_at")
@@ -75,7 +60,7 @@ export async function POST(
 
     if (insErr) {
       // rollback file se insert falhar
-      await supabaseAdmin.storage.from(BUCKET).remove([path]);
+      await deleteProductImage(storedImage.path);
       return NextResponse.json(
         { ok: false, message: insErr.message },
         { status: 500 }

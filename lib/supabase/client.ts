@@ -13,11 +13,25 @@ function requireEnv(name: string) {
   return value;
 }
 
+function getSupabasePublicKey() {
+  const value =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!value) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ou NEXT_PUBLIC_SUPABASE_ANON_KEY nao esta configurada. Veja .env.example para preparar o Supabase.",
+    );
+  }
+
+  return value;
+}
+
 export function getSupabaseClient() {
   if (!browserSafeClient) {
     browserSafeClient = createClient(
       requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+      getSupabasePublicKey(),
     );
   }
 

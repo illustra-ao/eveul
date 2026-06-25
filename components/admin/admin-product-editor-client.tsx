@@ -36,6 +36,24 @@ type ProductImage = {
   created_at?: string;
 };
 
+type UploadProgress = {
+  currentFile: string;
+  percent: number;
+  stage: "compressing" | "uploading";
+};
+
+const MAX_UPLOAD_FILES = 6;
+const MAX_SOURCE_IMAGE_BYTES = 20 * 1024 * 1024;
+const MAX_UPLOAD_IMAGE_BYTES = 4 * 1024 * 1024;
+const MAX_IMAGE_EDGE = 1800;
+const UPLOAD_IMAGE_QUALITY = 0.82;
+const SOURCE_IMAGE_TYPES = new Set([
+  "image/avif",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
 function formatKz(value: number) {
   return new Intl.NumberFormat("pt-PT").format(value);
 }
@@ -48,6 +66,169 @@ function slugify(input: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
+}
+
+function getUploadError(file: File) {
+  if (!SOURCE_IMAGE_TYPES.has(file.type)) {
+    return `${file.name}: use JPG, PNG, WebP ou AVIF.`;
+  }
+
+  if (file.size > MAX_SOURCE_IMAGE_BYTES) {
+    return `${file.name}: a imagem original excede 20 MB.`;
+  }
+
+  return null;
+}
+
+function canvasSupportsType(type: string) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+
+  return canvas.toDataURL(type).startsWith(`data:${type}`);
+}
+
+function toBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
+  return new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, type, quality);
+  });
+}
+
+function loadImage(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image();
+    const url = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`${file.name}: não foi possível ler a imagem.`));
+    };
+
+    image.src = url;
+  });
+}
+
+function buildCompressedFileName(name: string, mimeType: string) {
+  const baseName = name.replace(/\.[^.]+$/, "");
+  const extension = mimeType === "image/avif" ? "avif" : "webp";
+  return `${slugify(baseName) || "product-image"}.${extension}`;
+}
+
+async function compressProductImage(file: File) {
+  const validationError = getUploadError(file);
+  if (validationError) throw new Error(validationError);
+
+  const image = await loadImage(file);
+  const scale = Math.min(
+    1,
+    MAX_IMAGE_EDGE / Math.max(image.naturalWidth, image.naturalHeight),
+  );
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error(`${file.name}: não foi possível preparar a imagem.`);
+  }
+
+  context.drawImage(image, 0, 0, width, height);
+
+  const outputType = canvasSupportsType("image/avif")
+    ? "image/avif"
+    : "image/webp";
+  const compressedBlob = await toBlob(
+    canvas,
+    outputType,
+    UPLOAD_IMAGE_QUALITY,
+  );
+
+  if (!compressedBlob) {
+    if (file.size <= MAX_UPLOAD_IMAGE_BYTES) return file;
+    throw new Error(`${file.name}: não foi possível comprimir a imagem.`);
+  }
+
+  if (compressedBlob.size > MAX_UPLOAD_IMAGE_BYTES) {
+    throw new Error(
+      `${file.name}: mesmo comprimida, a imagem excede o limite de 4 MB.`,
+    );
+  }
+
+  return new File([compressedBlob], buildCompressedFileName(file.name, outputType), {
+    type: outputType,
+    lastModified: Date.now(),
+  });
+}
+
+function uploadProductImageRequest({
+  url,
+  formData,
+  onProgress,
+}: {
+  url: string;
+  formData: FormData;
+  onProgress: (progress: number) => void;
+}) {
+  return new Promise<ProductImage>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", url);
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      onProgress(event.loaded / event.total);
+    };
+
+    xhr.onload = () => {
+      const json = parseJson(xhr.responseText);
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(getApiMessage(json) ?? "Falha ao fazer upload."));
+        return;
+      }
+
+      if (!json || typeof json !== "object" || !("image" in json)) {
+        reject(new Error("Resposta inválida do servidor."));
+        return;
+      }
+
+      resolve((json as { image: ProductImage }).image);
+    };
+
+    xhr.onerror = () => reject(new Error("Falha de rede no upload."));
+    xhr.onabort = () => reject(new Error("Upload cancelado."));
+    xhr.send(formData);
+  });
+}
+
+function parseJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function getApiMessage(data: unknown): string | undefined {
+  if (!data || typeof data !== "object") return;
+  if (
+    "message" in data &&
+    typeof (data as { message?: unknown }).message === "string"
+  ) {
+    return (data as { message: string }).message;
+  }
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "Erro inesperado.";
 }
 
 export function AdminProductEditorClient({
@@ -77,6 +258,9 @@ export function AdminProductEditorClient({
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(
+    null,
+  );
   const [message, setMessage] = useState<{
     kind: "ok" | "err";
     text: string;
@@ -128,30 +312,48 @@ export function AdminProductEditorClient({
   const onUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
+    const selectedFiles = Array.from(files).slice(0, MAX_UPLOAD_FILES);
+
     setMessage(null);
     setUploading(true);
 
     try {
-      const uploaded: ProductImage[] = [];
+      if (files.length > MAX_UPLOAD_FILES) {
+        throw new Error(`Envie no máximo ${MAX_UPLOAD_FILES} imagens por vez.`);
+      }
 
-      for (const file of Array.from(files)) {
+      const uploaded: ProductImage[] = [];
+      const total = selectedFiles.length;
+
+      for (const [index, file] of selectedFiles.entries()) {
+        setUploadProgress({
+          currentFile: file.name,
+          percent: Math.round((index / total) * 100),
+          stage: "compressing",
+        });
+
+        const preparedFile = await compressProductImage(file);
         const fd = new FormData();
-        fd.append("file", file);
+        fd.append("file", preparedFile);
         fd.append("productId", product.id);
         fd.append("slug", slugify(form.slug || form.name));
 
-        const res = await fetch(
-          `/api/admin/products/${product.id}/images/upload`,
-          {
-            method: "POST",
-            body: fd,
+        const image = await uploadProductImageRequest({
+          url: `/api/admin/products/${product.id}/images/upload`,
+          formData: fd,
+          onProgress: (progress) => {
+            setUploadProgress({
+              currentFile: preparedFile.name,
+              percent: Math.min(
+                99,
+                Math.round(((index + progress) / total) * 100),
+              ),
+              stage: "uploading",
+            });
           },
-        );
+        });
 
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.message || "Falha ao fazer upload.");
-
-        uploaded.push(json.image as ProductImage);
+        uploaded.push(image);
       }
 
       // reordena: principal primeiro
@@ -159,6 +361,11 @@ export function AdminProductEditorClient({
         (a, b) => a.sort_order - b.sort_order,
       );
       setImages(next);
+      setUploadProgress({
+        currentFile: "Concluído",
+        percent: 100,
+        stage: "uploading",
+      });
       setMessage({ kind: "ok", text: "Imagem(ns) adicionada(s) com sucesso." });
 
       startTransition(() => router.refresh());
@@ -166,13 +373,14 @@ export function AdminProductEditorClient({
       setMessage({ kind: "err", text: getErrorMessage(e) });
     } finally {
       setUploading(false);
+      setUploadProgress(null);
     }
   };
 
   const makePrimary = async (imageId: string) => {
     setMessage(null);
     try {
-      const res = await fetch(`/api/admin/products/images/${imageId}`, {
+      const res = await fetch(`/api/admin/products/${product.id}/images/${imageId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ makePrimary: true, productId: product.id }),
@@ -195,34 +403,28 @@ export function AdminProductEditorClient({
     setMessage(null);
 
     try {
-      const res = await fetch(`/api/admin/products/images/${img.id}`, {
+      const res = await fetch(`/api/admin/products/${product.id}/images/${img.id}`, {
         method: "DELETE",
       });
       const json: unknown = await res.json();
       if (!res.ok) throw new Error(getApiMessage(json) ?? "Falha ao guardar.");
 
-      setImages((prev) => prev.filter((x) => x.id !== img.id));
+      if (
+        json &&
+        typeof json === "object" &&
+        "images" in json &&
+        Array.isArray((json as { images?: unknown }).images)
+      ) {
+        setImages((json as { images: ProductImage[] }).images);
+      } else {
+        setImages((prev) => prev.filter((x) => x.id !== img.id));
+      }
       setMessage({ kind: "ok", text: "Imagem removida." });
       startTransition(() => router.refresh());
     } catch (e: unknown) {
       setMessage({ kind: "err", text: getErrorMessage(e) });
     }
   };
-
-  function getApiMessage(data: unknown): string | undefined {
-    if (!data || typeof data !== "object") return;
-    if (
-      "message" in data &&
-      typeof (data as { message?: unknown }).message === "string"
-    ) {
-      return (data as { message: string }).message;
-    }
-  }
-  function getErrorMessage(error: unknown) {
-    if (error instanceof Error) return error.message;
-    if (typeof error === "string") return error;
-    return "Erro inesperado.";
-  }
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
@@ -420,6 +622,28 @@ export function AdminProductEditorClient({
                 </span>
               </label>
             </div>
+
+            {uploadProgress && (
+              <div className="mt-5 rounded-3xl border border-border bg-black/15 p-4">
+                <div className="flex items-center justify-between gap-4 text-[11px] tracking-[0.18em] text-muted-foreground">
+                  <span>
+                    {uploadProgress.stage === "compressing"
+                      ? "A COMPRIMIR"
+                      : "A ENVIAR"}
+                  </span>
+                  <span>{uploadProgress.percent}%</span>
+                </div>
+                <div className="mt-2 truncate text-xs text-foreground">
+                  {uploadProgress.currentFile}
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-[color:var(--gold)] transition-all"
+                    style={{ width: `${uploadProgress.percent}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Main preview */}
             <div className="mt-6 relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-border bg-black/25">

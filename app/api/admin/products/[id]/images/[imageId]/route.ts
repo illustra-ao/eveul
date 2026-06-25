@@ -1,111 +1,87 @@
-// app/api/admin/products/images/[imageId]/route.ts
+// app/api/admin/products/[id]/images/[imageId]/route.ts
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { deleteProductImage } from "@/lib/storage/product-images";
 
-const BUCKET = "product-images";
+type ProductImageRow = {
+  id: string;
+  product_id: string;
+  url: string;
+  path: string;
+  sort_order: number;
+  created_at?: string;
+};
+
+async function listImages(productId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("product_images")
+    .select("id,product_id,url,path,sort_order,created_at")
+    .eq("product_id", productId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ProductImageRow[];
+}
+
+async function reorderImages(productId: string, primaryImageId: string) {
+  const images = await listImages(productId);
+  const picked = images.find((image) => image.id === primaryImageId);
+
+  if (!picked) {
+    throw new Error("Imagem não encontrada para este produto.");
+  }
+
+  const reordered = [picked, ...images.filter((image) => image.id !== primaryImageId)].map(
+    (image, index) => ({ id: image.id, sort_order: index }),
+  );
+
+  const results = await Promise.all(
+    reordered.map((image) =>
+      supabaseAdmin
+        .from("product_images")
+        .update({ sort_order: image.sort_order })
+        .eq("id", image.id),
+    ),
+  );
+
+  const firstError = results.find((result) => result.error)?.error;
+  if (firstError) throw new Error(firstError.message);
+
+  return await listImages(productId);
+}
 
 export async function PATCH(
   req: Request,
-  ctx: { params: Promise<{ imageId: string }> }
+  ctx: { params: Promise<{ id: string; imageId: string }> }
 ) {
   try {
-    const { imageId } = await ctx.params;
+    const { id: productId, imageId } = await ctx.params;
     const body = (await req.json()) as {
       makePrimary?: boolean;
       productId?: string;
     };
 
-    if (!body.makePrimary || !body.productId) {
+    if (!body.makePrimary) {
       return NextResponse.json(
         { ok: false, message: "Pedido inválido." },
         { status: 400 }
       );
     }
 
-    // buscar imagem alvo
-    const { data: target, error: tErr } = await supabaseAdmin
-      .from("product_images")
-      .select("id,product_id,sort_order")
-      .eq("id", imageId)
-      .single<{ id: string; product_id: string; sort_order: number }>();
-
-    if (tErr || !target) {
-      return NextResponse.json(
-        { ok: false, message: "Imagem não encontrada." },
-        { status: 404 }
-      );
-    }
-
-    if (target.product_id !== body.productId) {
+    if (body.productId && body.productId !== productId) {
       return NextResponse.json(
         { ok: false, message: "Produto não corresponde." },
         { status: 400 }
       );
     }
 
-    // imagens do produto
-    const { data: imgs, error: iErr } = await supabaseAdmin
-      .from("product_images")
-      .select("id,sort_order")
-      .eq("product_id", body.productId)
-      .order("sort_order", { ascending: true })
-      .returns<{ id: string; sort_order: number }[]>();
-
-    if (iErr) {
-      return NextResponse.json(
-        { ok: false, message: iErr.message },
-        { status: 500 }
-      );
-    }
-
-    const list = imgs ?? [];
-    const picked = list.find((x) => x.id === imageId);
-    if (!picked) {
-      return NextResponse.json(
-        { ok: false, message: "Imagem não pertence ao produto." },
-        { status: 400 }
-      );
-    }
-
-    // reorder: picked vira 0; restantes mantêm ordem relativa começando em 1
-    const reordered = [
-      picked,
-      ...list.filter((x) => x.id !== imageId),
-    ].map((x, idx) => ({ id: x.id, sort_order: idx }));
-
-    // update em batch (sequencial simples)
-    for (const row of reordered) {
-      const { error } = await supabaseAdmin
-        .from("product_images")
-        .update({ sort_order: row.sort_order })
-        .eq("id", row.id);
-
-      if (error) {
-        return NextResponse.json(
-          { ok: false, message: error.message },
-          { status: 500 }
-        );
-      }
-    }
-
-    // devolve lista completa
-    const { data: updated, error: uErr } = await supabaseAdmin
-      .from("product_images")
-      .select("id,product_id,url,path,sort_order,created_at")
-      .eq("product_id", body.productId)
-      .order("sort_order", { ascending: true });
-
-    if (uErr) {
-      return NextResponse.json(
-        { ok: false, message: uErr.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ ok: true, images: updated ?? [] });
-  } catch {
+    const images = await reorderImages(productId, imageId);
+    return NextResponse.json({ ok: true, images });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erro inesperado.";
     return NextResponse.json(
-      { ok: false, message: "Erro inesperado." },
+      { ok: false, message },
       { status: 500 }
     );
   }
@@ -113,16 +89,17 @@ export async function PATCH(
 
 export async function DELETE(
   _req: Request,
-  ctx: { params: Promise<{ imageId: string }> }
+  ctx: { params: Promise<{ id: string; imageId: string }> }
 ) {
   try {
-    const { imageId } = await ctx.params;
+    const { id: productId, imageId } = await ctx.params;
 
     // buscar imagem
     const { data: img, error: gErr } = await supabaseAdmin
       .from("product_images")
       .select("id,product_id,path")
       .eq("id", imageId)
+      .eq("product_id", productId)
       .single<{ id: string; product_id: string; path: string }>();
 
     if (gErr || !img) {
@@ -133,9 +110,7 @@ export async function DELETE(
     }
 
     // remover do storage
-    if (img.path) {
-      await supabaseAdmin.storage.from(BUCKET).remove([img.path]);
-    }
+    await deleteProductImage(img.path);
 
     // remover da tabela
     const { error: dErr } = await supabaseAdmin
@@ -150,10 +125,31 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({ ok: true });
-  } catch {
+    const remaining = await listImages(productId);
+    if (remaining.length > 0) {
+      const results = await Promise.all(
+        remaining.map((image, index) =>
+          supabaseAdmin
+            .from("product_images")
+            .update({ sort_order: index })
+            .eq("id", image.id),
+        ),
+      );
+
+      const firstError = results.find((result) => result.error)?.error;
+      if (firstError) throw new Error(firstError.message);
+    }
+
+    const images = await listImages(productId);
+    return NextResponse.json({
+      ok: true,
+      images,
+      primaryId: images[0]?.id ?? null,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Erro inesperado.";
     return NextResponse.json(
-      { ok: false, message: "Erro inesperado." },
+      { ok: false, message },
       { status: 500 }
     );
   }

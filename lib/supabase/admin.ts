@@ -13,11 +13,24 @@ function requireEnv(name: string) {
   return value;
 }
 
+function getSupabaseAdminKey() {
+  const value =
+    process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!value) {
+    throw new Error(
+      "SUPABASE_SECRET_KEY ou SUPABASE_SERVICE_ROLE_KEY nao esta configurada. Veja .env.example para preparar o Supabase.",
+    );
+  }
+
+  return value;
+}
+
 export function getSupabaseAdmin() {
   if (!adminClient) {
     adminClient = createClient(
       requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      getSupabaseAdminKey(),
       {
         auth: { persistSession: false },
       },

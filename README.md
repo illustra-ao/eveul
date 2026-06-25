@@ -32,8 +32,9 @@ cp .env.example .env.local
 Obrigatorias para Supabase:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (ou `NEXT_PUBLIC_SUPABASE_ANON_KEY` em projectos antigos)
+- `SUPABASE_SECRET_KEY` (ou `SUPABASE_SERVICE_ROLE_KEY` em projectos antigos)
+- `PRODUCT_IMAGE_BUCKET` (por defeito: `product-images`)
 
 Recomendadas para deploy:
 
@@ -45,6 +46,10 @@ Recomendadas para deploy:
 Em desenvolvimento, se `ADMIN_PASSWORD` estiver vazio, o login local aceita `admin` / `admin`. Em producao, defina sempre uma palavra-passe forte; sem `ADMIN_PASSWORD`, o acesso admin fica bloqueado.
 
 ## Supabase
+
+Para um projecto novo, execute o SQL em `supabase/schema.sql` no SQL Editor do
+Supabase. Ele cria as tabelas, politicas publicas de leitura para produtos
+activos e o bucket `product-images`.
 
 Tabelas esperadas:
 

@@ -6,7 +6,31 @@ import { ProductRowActions } from "@/components/admin/product-row-actions";
 
 export const dynamic = "force-dynamic";
 
+function getAdminSetupCopy(message: string) {
+  const lowerMessage = message.toLowerCase();
+
+  if (
+    lowerMessage.includes("could not find the table") ||
+    lowerMessage.includes("schema cache") ||
+    lowerMessage.includes("relation") && lowerMessage.includes("does not exist")
+  ) {
+    return {
+      title: "Base de dados ainda sem schema.",
+      body:
+        "O Storage já pode estar criado, mas a área de produtos também precisa das tabelas `products`, `product_images` e `newsletter_subscribers` na base de dados. Execute `supabase/schema.sql` no SQL Editor do Supabase.",
+    };
+  }
+
+  return {
+    title: "Supabase ainda não configurado.",
+    body:
+      "O login está activo, mas a área de produtos precisa das variáveis `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (ou `NEXT_PUBLIC_SUPABASE_ANON_KEY`) e `SUPABASE_SECRET_KEY` (ou `SUPABASE_SERVICE_ROLE_KEY`) no ambiente.",
+  };
+}
+
 function AdminSetupState({ message }: { message: string }) {
+  const copy = getAdminSetupCopy(message);
+
   return (
     <main className="relative">
       <SiteNavbar />
@@ -17,12 +41,10 @@ function AdminSetupState({ message }: { message: string }) {
               ADMIN
             </div>
             <h1 className="mt-4 font-[var(--font-display)] text-4xl tracking-tight">
-              Supabase ainda não configurado.
+              {copy.title}
             </h1>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              O login está activo, mas a área de produtos precisa das variáveis
-              `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e
-              `SUPABASE_SERVICE_ROLE_KEY` no ambiente.
+              {copy.body}
             </p>
             <div className="mt-6 rounded-2xl border border-border bg-black/15 p-4 text-sm text-muted-foreground">
               {message}
