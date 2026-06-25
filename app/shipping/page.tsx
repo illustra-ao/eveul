@@ -13,7 +13,7 @@ export default function ShippingPage() {
       eyebrow="ENVIOS & DEVOLUÇÕES"
       title="Entrega simples, informação clara."
       intro="Antes de confirmar uma compra, alinhamos stock, prazo, forma de pagamento e destino. O objectivo é evitar surpresas e manter o pedido acompanhado."
-      image="/images/feature-4.jpg"
+      image="/images/feature-4.webp"
       stats={[
         { label: "Luanda", value: "24-72h" },
         { label: "Províncias", value: "Prazo confirmado" },

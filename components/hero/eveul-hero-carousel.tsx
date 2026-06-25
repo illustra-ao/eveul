@@ -214,6 +214,7 @@ export function EveulHeroCarousel() {
                 src={current.image}
                 alt={`Eveul ${current.id}`}
                 fill
+                sizes="(min-width: 768px) 560px, (min-width: 640px) 420px, 380px"
                 className="object-contain drop-shadow-2xl"
                 priority
               />

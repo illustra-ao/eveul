@@ -3,7 +3,7 @@ export const siteConfig = {
   supportEmail: "support@eveul.ao",
   whatsappNumber: "244943670112",
   whatsappDisplay: "+244 943 670 112",
-  fallbackProductImage: "/images/watch-thumb.jpg",
+  fallbackProductImage: "/images/watch-thumb.webp",
 };
 
 export function buildWhatsAppLink(message: string) {

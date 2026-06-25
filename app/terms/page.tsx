@@ -12,7 +12,7 @@ export default function TermsPage() {
       eyebrow="TERMOS"
       title="Termos de utilização."
       intro="Estes termos organizam a relação entre a Eveul e os clientes que navegam, reservam ou compram através dos nossos canais digitais."
-      image="/images/feature-1.jpg"
+      image="/images/feature-1.webp"
       stats={[
         { label: "Aplicação", value: "Website e canais digitais" },
         { label: "Compras", value: "Após confirmação" },

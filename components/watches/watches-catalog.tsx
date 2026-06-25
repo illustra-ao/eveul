@@ -25,7 +25,7 @@ const productsSeed: Product[] = [
     collection: "Signature",
     price: 189000,
     currency: "Kz",
-    image: "/images/feature-4.jpg",
+    image: "/images/feature-4.webp",
     badge: "BEST SELLER",
   },
   {
@@ -34,7 +34,7 @@ const productsSeed: Product[] = [
     collection: "Limited",
     price: 265000,
     currency: "Kz",
-    image: "/images/feature-3.jpg",
+    image: "/images/feature-3.webp",
     badge: "LIMITED",
   },
   {
@@ -43,7 +43,7 @@ const productsSeed: Product[] = [
     collection: "Classic",
     price: 149000,
     currency: "Kz",
-    image: "/images/feature-1.jpg",
+    image: "/images/feature-1.webp",
     badge: "NEW",
   },
   {
@@ -52,7 +52,7 @@ const productsSeed: Product[] = [
     collection: "Signature",
     price: 210000,
     currency: "Kz",
-    image: "/images/feature-2.jpg",
+    image: "/images/feature-2.webp",
     badge: "BEST SELLER",
   },
 ];
@@ -267,6 +267,7 @@ function ProductCard({ product }: { product: Product }) {
           src={image}
           alt={name}
           fill
+          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover transition duration-700 group-hover:scale-[1.03]"
         />
       </div>

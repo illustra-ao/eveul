@@ -84,9 +84,10 @@ export function AboutHero() {
             <div className="relative overflow-hidden rounded-4xl border border-border bg-card/20 backdrop-blur">
               <div className="relative aspect-[4/3] w-full">
                 <Image
-                  src="/images/feature-1.jpg"
+                  src="/images/feature-1.webp"
                   alt="Eveul about hero"
                   fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
                   className="object-cover"
                   priority
                 />

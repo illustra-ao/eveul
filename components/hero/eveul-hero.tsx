@@ -136,6 +136,7 @@ export function EveulHero() {
               src="/images/watch-thumb.png"
               alt="Eveul watch hero"
               fill
+              sizes="(min-width: 768px) 560px, 420px"
               className="object-contain drop-shadow-2xl"
               priority
             />
@@ -157,6 +158,7 @@ export function EveulHero() {
                 src="/images/watch-thumb.png"
                 alt="Behind the scenes"
                 fill
+                sizes="220px"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/25" />

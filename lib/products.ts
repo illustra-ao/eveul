@@ -31,7 +31,7 @@ export const fallbackProducts: FallbackProduct[] = [
     price: 189000,
     currency: "Kz",
     badge: "BEST SELLER",
-    images: ["/images/eveul3.png", "/images/feature-4.jpg"],
+    images: ["/images/eveul3.png", "/images/feature-4.webp"],
     description:
       "Uma assinatura Eveul com presenca forte, mecanismo aberto e acabamento premium para uso diario.",
     highlights: ["Open Gear", "Vidro de safira", "Caixa premium"],
@@ -50,7 +50,7 @@ export const fallbackProducts: FallbackProduct[] = [
     price: 265000,
     currency: "Kz",
     badge: "LIMITED",
-    images: ["/images/eveul2.png", "/images/feature-3.jpg"],
+    images: ["/images/eveul2.png", "/images/feature-3.webp"],
     description:
       "Edicao limitada com detalhe mecanico em destaque, criada para quem prefere uma peca rara e expressiva.",
     highlights: ["Edicao limitada", "Open Gear", "Acabamento premium"],
@@ -69,7 +69,7 @@ export const fallbackProducts: FallbackProduct[] = [
     price: 149000,
     currency: "Kz",
     badge: "NEW",
-    images: ["/images/feature-1.jpg", "/images/watch-thumb.jpg"],
+    images: ["/images/feature-1.webp", "/images/watch-thumb.webp"],
     description:
       "Um modelo classico e versatil, pensado para acompanhar dias de trabalho, eventos e presentes especiais.",
     highlights: ["Classico", "Versatil", "Suporte local"],
@@ -88,7 +88,7 @@ export const fallbackProducts: FallbackProduct[] = [
     price: 210000,
     currency: "Kz",
     badge: "BEST SELLER",
-    images: ["/images/feature-2.jpg", "/images/eveul1.png"],
+    images: ["/images/feature-2.webp", "/images/eveul1.png"],
     description:
       "A linguagem Signature com tons dourados subtis, boa presenca no pulso e leitura elegante.",
     highlights: ["Signature", "Dourado subtil", "Vidro de safira"],

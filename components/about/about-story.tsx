@@ -75,9 +75,10 @@ export function AboutStory() {
             <div className="relative overflow-hidden rounded-4xl border border-border bg-card/20 backdrop-blur">
               <div className="relative aspect-[16/9] w-full">
                 <Image
-                  src="/images/feature-2.jpg"
+                  src="/images/feature-2.webp"
                   alt="Eveul story"
                   fill
+                  sizes="(min-width: 768px) 58vw, 100vw"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-black/75 via-black/25 to-black/10" />

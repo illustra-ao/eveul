@@ -92,7 +92,7 @@ export function AboutProcess() {
                   ref={videoRef}
                   className="h-full w-full object-cover"
                   src="/videos/eveul-craft.mp4"
-                  poster="/images/story-poster.jpg"
+                  poster="/images/story-poster.webp"
                   playsInline
                   muted
                   loop

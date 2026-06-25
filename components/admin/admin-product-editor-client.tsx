@@ -653,6 +653,7 @@ export function AdminProductEditorClient({
                     src={mainImage}
                     alt="Principal"
                     fill
+                    sizes="(min-width: 1024px) 420px, 100vw"
                     className="object-cover"
                     unoptimized
                   />
@@ -681,6 +682,7 @@ export function AdminProductEditorClient({
                       src={img.url}
                       alt={`Imagem ${idx + 1}`}
                       fill
+                      sizes="140px"
                       className="object-cover"
                       unoptimized
                     />

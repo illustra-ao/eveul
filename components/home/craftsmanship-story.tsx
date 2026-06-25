@@ -178,7 +178,7 @@ export function CraftsmanshipStory() {
                   ref={videoRef}
                   className="h-full w-full object-cover"
                   src="/videos/eveul-craft.mp4"
-                  poster="/images/story-poster.jpg"
+                  poster="/images/story-poster.webp"
                   playsInline
                   muted
                   loop
@@ -233,13 +233,13 @@ export function CraftsmanshipStory() {
                 refEl={mini1Ref}
                 title="Textura e acabamento"
                 label="DETAILS"
-                image="/images/feature-2.jpg"
+                image="/images/feature-2.webp"
               />
               <MiniCard
                 refEl={mini2Ref}
                 title="Mecânica e presença"
                 label="MECHANISM"
-                image="/images/feature-1.jpg"
+                image="/images/feature-1.webp"
               />
             </div>
           </div>
@@ -306,6 +306,8 @@ function MiniCard({
           src={image}
           alt={title}
           fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          quality={72}
           className="object-cover transition duration-700 group-hover:scale-[1.03]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/70" />

@@ -81,6 +81,7 @@ export function WatchProductPage({
                   src={mainImage}
                   alt={product.name}
                   fill
+                  sizes="(min-width: 1024px) 58vw, 100vw"
                   className="object-cover"
                   unoptimized
                 />
@@ -112,6 +113,7 @@ export function WatchProductPage({
                       src={src}
                       alt={`${product.name} ${i + 1}`}
                       fill
+                      sizes="(min-width: 1024px) 160px, 25vw"
                       className="object-cover"
                       unoptimized
                     />
@@ -311,6 +313,7 @@ function RelatedCard({ p }: { p: WatchProduct }) {
           src={img}
           alt={p.name}
           fill
+          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover transition duration-700 group-hover:scale-[1.03]"
           unoptimized
         />

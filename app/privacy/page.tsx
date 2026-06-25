@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       eyebrow="PRIVACIDADE"
       title="Dados tratados com respeito."
       intro="Recolhemos apenas os dados necessários para responder a contactos, processar pedidos, gerir newsletter e prestar suporte."
-      image="/images/feature-3.jpg"
+      image="/images/feature-3.webp"
       stats={[
         { label: "Dados", value: "Mínimos necessários" },
         { label: "Newsletter", value: "Cancelável" },

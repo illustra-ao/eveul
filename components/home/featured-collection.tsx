@@ -101,9 +101,11 @@ export function FeaturedCollection() {
             {/* Image */}
             <div className="relative h-[320px] w-full md:h-[360px]">
               <Image
-                src="/images/feature-2.jpg"
+                src="/images/feature-2.webp"
                 alt="Featured watch macro"
                 fill
+                sizes="(min-width: 768px) 58vw, 100vw"
+                quality={72}
                 className="object-cover transition duration-700 group-hover:scale-[1.02]"
               />
             </div>
@@ -130,6 +132,8 @@ export function FeaturedCollection() {
                   src="/images/eveul3.png"
                   alt="Craftsmanship"
                   fill
+                  sizes="(min-width: 768px) 42vw, 100vw"
+                  quality={72}
                   className="object-cover transition duration-700 group-hover:scale-[1.03]"
                 />
               </div>
@@ -151,9 +155,11 @@ export function FeaturedCollection() {
 
               <div className="relative h-[220px]">
                 <Image
-                  src="/images/feature-1.jpg"
+                  src="/images/feature-1.webp"
                   alt="Limited edition"
                   fill
+                  sizes="(min-width: 768px) 42vw, 100vw"
+                  quality={72}
                   className="object-cover transition duration-700 group-hover:scale-[1.03]"
                 />
               </div>

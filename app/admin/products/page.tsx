@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { SiteNavbar } from "@/components/site-navbar";
 import { SiteFooter } from "@/components/site-footer";
 import { ProductRowActions } from "@/components/admin/product-row-actions";
+import { siteConfig } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
 
@@ -108,6 +110,7 @@ export default async function AdminProductsPage() {
         currency: string;
         status: "active" | "draft" | "archived";
         created_at: string;
+        image?: string;
       }[]
     | null = null;
 
@@ -118,7 +121,32 @@ export default async function AdminProductsPage() {
       .order("created_at", { ascending: false });
 
     if (result.error) throw new Error(result.error.message);
-    data = result.data;
+
+    const products = result.data ?? [];
+    const productIds = products.map((product) => product.id);
+    const firstImageByProduct = new Map<string, string>();
+
+    if (productIds.length > 0) {
+      const imagesResult = await supabaseAdmin
+        .from("product_images")
+        .select("product_id,url,sort_order,created_at")
+        .in("product_id", productIds)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (imagesResult.error) throw new Error(imagesResult.error.message);
+
+      for (const image of imagesResult.data ?? []) {
+        if (!firstImageByProduct.has(image.product_id)) {
+          firstImageByProduct.set(image.product_id, image.url);
+        }
+      }
+    }
+
+    data = products.map((product) => ({
+      ...product,
+      image: firstImageByProduct.get(product.id),
+    }));
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Erro ao ligar ao Supabase.";
@@ -162,7 +190,7 @@ export default async function AdminProductsPage() {
           <div className="mt-8 overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur">
             {/* Header só em md+ */}
             <div className="hidden md:grid grid-cols-12 gap-4 border-b border-border px-5 py-3 text-[11px] tracking-[0.22em] text-muted-foreground">
-              <div className="col-span-4">NOME</div>
+              <div className="col-span-4">PRODUTO</div>
               <div className="col-span-2">COLECÇÃO</div>
               <div className="col-span-2">PREÇO</div>
               <div className="col-span-2">ESTADO</div>
@@ -181,9 +209,25 @@ export default async function AdminProductsPage() {
               >
                 {/* Nome / slug */}
                 <div className="md:col-span-4">
-                  <div className="text-sm text-foreground">{p.name}</div>
-                  <div className="mt-1 text-[11px] tracking-[0.22em] text-muted-foreground break-all">
-                    {p.slug}
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border bg-black/25">
+                      <Image
+                        src={p.image ?? siteConfig.fallbackProductImage}
+                        alt={p.name}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/0 to-black/30" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm text-foreground">
+                        {p.name}
+                      </div>
+                      <div className="mt-1 break-all text-[11px] tracking-[0.22em] text-muted-foreground">
+                        {p.slug}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Mobile: mini info */}

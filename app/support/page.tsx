@@ -13,7 +13,7 @@ export default function SupportPage() {
       eyebrow="GARANTIA & SERVIÇO"
       title="Suporte claro depois da compra."
       intro="A experiência Eveul não termina na entrega. Acompanhamos dúvidas de uso, assistência, garantia e cuidados para manter a peça em bom estado."
-      image="/images/feature-2.jpg"
+      image="/images/feature-2.webp"
       stats={[
         { label: "Garantia", value: "12 meses" },
         { label: "Entrega Luanda", value: "24-72h" },

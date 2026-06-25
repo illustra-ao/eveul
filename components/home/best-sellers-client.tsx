@@ -144,8 +144,9 @@ function ProductCard({ product }: { product: ProductCardVM }) {
           src={image}
           alt={name}
           fill
+          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+          quality={72}
           className="object-cover transition duration-700 group-hover:scale-[1.03]"
-          unoptimized
         />
 
         {imageHover && (
@@ -153,8 +154,9 @@ function ProductCard({ product }: { product: ProductCardVM }) {
             src={imageHover}
             alt={`${name} hover`}
             fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            quality={68}
             className="object-cover opacity-0 transition duration-700 group-hover:opacity-100"
-            unoptimized
           />
         )}
 

@@ -14,7 +14,7 @@ export default function ContactPage() {
       eyebrow="CONTACTOS"
       title="Fale com a Eveul."
       intro="Apoio directo para escolher modelos, confirmar stock, reservar peças e acompanhar pedidos. Comunicação clara antes, durante e depois da compra."
-      image="/images/story-poster.jpg"
+      image="/images/story-poster.webp"
       stats={[
         { label: "WhatsApp", value: siteConfig.whatsappDisplay },
         { label: "Email", value: siteConfig.supportEmail },
