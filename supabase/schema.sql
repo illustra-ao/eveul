@@ -49,9 +49,31 @@ create table if not exists public.newsletter_subscribers (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.hero_carousel_slides (
+  id text primary key,
+  image_url text,
+  image_path text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists set_hero_carousel_slides_updated_at on public.hero_carousel_slides;
+create trigger set_hero_carousel_slides_updated_at
+before update on public.hero_carousel_slides
+for each row execute function public.set_updated_at();
+
+insert into public.hero_carousel_slides (id, image_url, image_path, sort_order)
+values
+  ('jupiter', null, null, 0),
+  ('paraiba', null, null, 1)
+on conflict (id) do update
+set sort_order = excluded.sort_order;
+
 alter table public.products enable row level security;
 alter table public.product_images enable row level security;
 alter table public.newsletter_subscribers enable row level security;
+alter table public.hero_carousel_slides enable row level security;
 
 drop policy if exists "Public can read active products" on public.products;
 create policy "Public can read active products"
@@ -71,6 +93,12 @@ using (
       and products.status = 'active'
   )
 );
+
+drop policy if exists "Public can read hero carousel slides" on public.hero_carousel_slides;
+create policy "Public can read hero carousel slides"
+on public.hero_carousel_slides
+for select
+using (true);
 
 insert into storage.buckets (
   id,

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { SiteNavbar } from "@/components/site-navbar";
 import { SiteFooter } from "@/components/site-footer";
+import { AdminTabs } from "@/components/admin/admin-tabs";
 import { ProductRowActions } from "@/components/admin/product-row-actions";
 import { siteConfig } from "@/lib/site-config";
 
@@ -186,6 +187,8 @@ export default async function AdminProductsPage() {
               </Link>
             </div>
           </div>
+
+          <AdminTabs active="products" />
 
           <div className="mt-8 overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur">
             {/* Header só em md+ */}

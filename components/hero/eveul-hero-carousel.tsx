@@ -2,55 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { Button } from "@/components/ui/button";
+import {
+  defaultHeroCarouselSlides,
+  type HeroCarouselSlide,
+} from "@/lib/hero-carousel";
 
-type Slide = {
-  id: string;
-  badge: string;
-  code: string;
-  titleLines: string[];
-  image: string;
-  href: string;
-  availableLabel?: string;
-
-  collection?: string;
-  specs?: string;
-  nextLabel?: string;
-  // price removido do hero (fica para a página do produto)
-};
-
-export function EveulHeroCarousel() {
-  const slides: Slide[] = useMemo(
-    () => [
-      {
-        id: "jupiter",
-        badge: "EDIÇÃO LIMITADA • 50 PEÇAS",
-        code: "EV-2043-02",
-        titleLines: ["SPACE", "TIMER", "JUPITER"],
-        image: "/images/eveul3.png",
-        href: "/watches/eveul-jupiter",
-        availableLabel: "DISPONÍVEL",
-        nextLabel: "SEGUINTE: EVEUL PARAÍBA",
-        collection: "Signature",
-        specs: "Open Gear • Caixa em titânio • Vidro de safira",
-      },
-      {
-        id: "paraiba",
-        badge: "EDIÇÃO LIMITADA • 15 PEÇAS",
-        code: "EV-3123-PABL",
-        titleLines: ["OPEN GEAR", "FLYING", "TOURBILLON", "PARAÍBA"],
-        image: "/images/eveul2.png",
-        href: "/watches/eveul-paraiba",
-        availableLabel: "DISPONÍVEL",
-        nextLabel: "SEGUINTE: EVEUL JUPITER",
-        collection: "Limited Edition",
-        specs: "Open Gear • Tourbillon • Vidro de safira",
-      },
-    ],
-    [],
-  );
+export function EveulHeroCarousel({
+  slides = defaultHeroCarouselSlides,
+}: {
+  slides?: HeroCarouselSlide[];
+}) {
 
   const root = useRef<HTMLElement | null>(null);
   const leftCol = useRef<HTMLDivElement | null>(null);
@@ -60,7 +24,7 @@ export function EveulHeroCarousel() {
   const [index, setIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const current = slides[index];
+  const current = slides[index] ?? defaultHeroCarouselSlides[0];
 
   const go = (dir: 1 | -1) => {
     if (isAnimating) return;

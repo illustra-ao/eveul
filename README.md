@@ -56,6 +56,7 @@ Tabelas esperadas:
 - `products`: `id`, `slug`, `name`, `collection`, `price`, `currency`, `badge`, `description`, `highlights`, `status`, `created_at`, `updated_at`
 - `product_images`: `id`, `product_id`, `url`, `path`, `sort_order`, `created_at`
 - `newsletter_subscribers`: `id`, `email`, `source`, `created_at`
+- `hero_carousel_slides`: `id`, `image_url`, `image_path`, `sort_order`, `created_at`, `updated_at`
 
 Storage bucket esperado:
 
@@ -72,6 +73,7 @@ Valores usados no app:
 - Lista: `/admin/products`
 - Novo produto: `/admin/products/new`
 - Editar produto: `/admin/products/:id`
+- Imagens do carrossel: `/admin/carousel`
 - Login: `/admin/login`
 - Logout: `/admin/logout`
 

@@ -57,23 +57,20 @@ function safePathPart(value: string) {
   return cleaned || "product";
 }
 
-export async function uploadProductImage({
+async function uploadStoredImage({
   file,
-  productId,
-  slug,
+  folder,
 }: {
   file: File;
-  productId: string;
-  slug?: string;
+  folder: string;
 }): Promise<StoredProductImage> {
   const validationError = validateProductImageFile(file);
   if (validationError) {
     throw new Error(validationError);
   }
 
-  const safeSlug = safePathPart(slug || productId);
   const extension = getImageExtension(file);
-  const path = `products/${safeSlug}/${crypto.randomUUID()}.${extension}`;
+  const path = `${folder}/${crypto.randomUUID()}.${extension}`;
 
   const { error } = await supabaseAdmin.storage
     .from(PRODUCT_IMAGE_BUCKET)
@@ -97,7 +94,33 @@ export async function uploadProductImage({
   };
 }
 
-export async function deleteProductImage(path: string) {
+export async function uploadProductImage({
+  file,
+  productId,
+  slug,
+}: {
+  file: File;
+  productId: string;
+  slug?: string;
+}) {
+  const safeSlug = safePathPart(slug || productId);
+  return uploadStoredImage({ file, folder: `products/${safeSlug}` });
+}
+
+export async function uploadCarouselImage({
+  file,
+  slideId,
+}: {
+  file: File;
+  slideId: string;
+}) {
+  return uploadStoredImage({
+    file,
+    folder: `carousel/${safePathPart(slideId)}`,
+  });
+}
+
+export async function deleteStoredImage(path: string) {
   if (!path) return;
 
   const { error } = await supabaseAdmin.storage
@@ -108,3 +131,5 @@ export async function deleteProductImage(path: string) {
     throw new Error(error.message);
   }
 }
+
+export const deleteProductImage = deleteStoredImage;

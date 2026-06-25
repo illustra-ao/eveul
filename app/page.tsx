@@ -6,6 +6,7 @@ import { BestSellers } from "@/components/home/best-sellers";
 import { CraftsmanshipStory } from "@/components/home/craftsmanship-story";
 import { FinalNewsletterCTA } from "@/components/home/final-newsletter-cta";
 import { SiteFooter } from "@/components/site-footer";
+import { getHeroCarouselSlides } from "@/lib/hero-carousel-data";
 
 export const dynamic = "force-dynamic";
 
@@ -33,11 +34,13 @@ function BestSellersLoading() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const heroSlides = await getHeroCarouselSlides();
+
   return (
     <main className="relative">
       <SiteNavbar />
-      <EveulHeroCarousel />
+      <EveulHeroCarousel slides={heroSlides} />
       <FeaturedCollection />
       <Suspense fallback={<BestSellersLoading />}>
         <BestSellers />
