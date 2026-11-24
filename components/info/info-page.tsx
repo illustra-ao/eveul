@@ -1,9 +1,9 @@
-import Image from "next/image";
-import Link from "next/link";
+import { siteConfig } from "@/lib/site-config";
 import { Button } from "@/components/ui/button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNavbar } from "@/components/site-navbar";
-import { defaultWhatsAppLink, siteConfig } from "@/lib/site-config";
+import { Section } from "@/components/brand/section";
+import { WhatsAppButton } from "@/components/brand/whatsapp-button";
 
 type Stat = {
   label: string;
@@ -16,6 +16,7 @@ type InfoItem = {
 };
 
 type InfoSection = {
+  /** Etiqueta curta: usada no índice lateral (desktop) */
   eyebrow: string;
   title: string;
   body?: string;
@@ -23,179 +24,134 @@ type InfoSection = {
 };
 
 type InfoPageProps = {
-  eyebrow: string;
+  /** Mantido por compatibilidade; o título já identifica a página */
+  eyebrow?: string;
   title: string;
   intro: string;
-  image: string;
+  /** Mantido por compatibilidade; páginas de texto não mostram imagem (mais leve no mobile) */
+  image?: string;
   stats: Stat[];
   sections: InfoSection[];
   finalTitle?: string;
   finalBody?: string;
 };
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+/** Remove o ponto final decorativo dos títulos ("Perguntas frequentes." → "Perguntas frequentes") */
+function cleanTitle(value: string) {
+  return value.replace(/\.$/, "");
+}
+
+/**
+ * Template das páginas informativas (contactos, FAQ, envios, apoio, termos,
+ * privacidade, cookies). Texto em primeiro lugar, índice lateral no desktop.
+ */
 export function InfoPage({
-  eyebrow,
   title,
   intro,
-  image,
   stats,
   sections,
   finalTitle = "Precisa de apoio directo?",
   finalBody = "Fale connosco para confirmar disponibilidade, entrega, garantia ou qualquer detalhe antes da compra.",
 }: InfoPageProps) {
+  const toc = sections.map((s) => ({ ...s, id: slugify(s.eyebrow || s.title) }));
+
   return (
-    <main className="relative">
+    <>
       <SiteNavbar />
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-background" />
-        <div className="absolute inset-0">
-          <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[color:var(--gold)]/10 blur-[140px]" />
-          <div className="absolute -right-56 top-10 h-[620px] w-[620px] rounded-full bg-white/5 blur-[160px]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/55 to-black/90" />
-        </div>
+      <main className="pt-16">
+        <Section spacing="compact" aria-labelledby="info-titulo">
+          <h1 id="info-titulo" className="rule-top max-w-3xl text-h1">
+            {cleanTitle(title)}
+          </h1>
+          <p className="mt-5 max-w-2xl text-lead text-muted-foreground">{intro}</p>
 
-        <div className="relative mx-auto w-full max-w-7xl px-4 pb-14 pt-28 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:items-center">
-            <div className="md:col-span-6">
-              <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-                {eyebrow}
-              </div>
-              <h1 className="mt-4 font-[var(--font-display)] text-5xl leading-[0.95] tracking-tight md:text-6xl">
-                {title}
-              </h1>
-              <p className="mt-6 max-w-xl text-sm leading-7 text-muted-foreground">
-                {intro}
-              </p>
+          {stats.length > 0 ? (
+            <dl className="mt-10 grid border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-border">
+              {stats.map((stat) => (
+                <div key={stat.label} className="border-b border-border py-4 last:border-b-0 sm:border-b-0 sm:px-6 sm:first:pl-0">
+                  <dt className="text-meta text-muted-foreground">{stat.label}</dt>
+                  <dd className="mt-1 font-display text-lg font-semibold uppercase tracking-wide">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+        </Section>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Button
-                  asChild
-                  className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
+        <Section spacing="none" className="pb-section">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-12">
+            <nav aria-label="Nesta página" className="hidden lg:col-span-3 lg:block">
+              <ol className="sticky top-24 border-l border-border">
+                {toc.map((s) => (
+                  <li key={s.id}>
+                    <a
+                      href={`#${s.id}`}
+                      className="-ml-px flex min-h-touch items-center border-l-2 border-transparent pl-4 text-muted-foreground transition-colors hover:border-rule hover:text-foreground"
+                    >
+                      {cleanTitle(s.title)}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+
+            <div className="lg:col-span-8 lg:col-start-5">
+              {toc.map((section, i) => (
+                <section
+                  key={section.id}
+                  id={section.id}
+                  aria-labelledby={`${section.id}-titulo`}
+                  className={i === 0 ? "scroll-mt-24" : "mt-14 scroll-mt-24 md:mt-16"}
                 >
-                  <a href={defaultWhatsAppLink} target="_blank" rel="noreferrer">
-                    WhatsApp
-                  </a>
-                </Button>
-                <Link
-                  href="/watches"
-                  className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
-                >
-                  VER STOCK →
-                </Link>
-              </div>
-            </div>
+                  <h2 id={`${section.id}-titulo`} className="rule-top text-h2">
+                    {cleanTitle(section.title)}
+                  </h2>
+                  {section.body ? (
+                    <p className="mt-4 max-w-prose text-muted-foreground">{section.body}</p>
+                  ) : null}
 
-            <div className="md:col-span-6">
-              <div className="relative overflow-hidden rounded-4xl border border-border bg-card/20 backdrop-blur">
-                <div className="relative aspect-[4/3] w-full">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    sizes="(min-width: 768px) 50vw, 100vw"
-                    className="object-cover"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/75 via-black/25 to-black/10" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-3xl border border-border bg-card/15 p-5 backdrop-blur"
-              >
-                <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                  {stat.label.toUpperCase()}
-                </div>
-                <div className="mt-2 text-sm text-foreground">{stat.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden border-t border-border">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/75 to-black/95" />
-        <div className="relative mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {sections.map((section) => (
-              <article
-                key={section.title}
-                className="rounded-4xl border border-border bg-card/15 p-7 backdrop-blur md:p-8"
-              >
-                <div className="text-[11px] tracking-[0.22em] text-[color:var(--gold)]">
-                  {section.eyebrow}
-                </div>
-                <h2 className="mt-3 font-[var(--font-display)] text-3xl leading-[1.05] tracking-tight">
-                  {section.title}
-                </h2>
-                {section.body ? (
-                  <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                    {section.body}
-                  </p>
-                ) : null}
-
-                {section.items ? (
-                  <div className="mt-6 divide-y divide-border/70 border-t border-border/70">
-                    {section.items.map((item) => (
-                      <div
-                        key={item.title}
-                        className="py-4"
-                      >
-                        <div className="text-sm font-medium text-foreground">
-                          {item.title}
+                  {section.items?.length ? (
+                    <dl className="mt-6 border-t border-border">
+                      {section.items.map((item) => (
+                        <div key={item.title} className="border-b border-border py-5 md:grid md:grid-cols-[14rem_1fr] md:gap-6">
+                          <dt className="font-display text-lg font-semibold uppercase leading-tight tracking-wide">
+                            {item.title}
+                          </dt>
+                          <dd className="mt-1.5 text-muted-foreground md:mt-0">{item.body}</dd>
                         </div>
-                        <div className="mt-1 text-sm leading-7 text-muted-foreground">
-                          {item.body}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-12 rounded-4xl border border-border bg-card/15 p-8 backdrop-blur md:p-10">
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div>
-                <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                  EVEUL SUPPORT
-                </div>
-                <h2 className="mt-2 font-[var(--font-display)] text-3xl tracking-tight">
-                  {finalTitle}
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-                  {finalBody}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  asChild
-                  className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
-                >
-                  <a href={defaultWhatsAppLink} target="_blank" rel="noreferrer">
-                    WhatsApp
-                  </a>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-11 rounded-full border-border bg-black/20 px-6 backdrop-blur hover:bg-black/35"
-                >
-                  <a href={`mailto:${siteConfig.supportEmail}`}>Email</a>
-                </Button>
-              </div>
+                      ))}
+                    </dl>
+                  ) : null}
+                </section>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </Section>
+
+        <Section tone="raised" spacing="compact" className="border-t border-border">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-h2">{cleanTitle(finalTitle)}</h2>
+              <p className="mt-2 max-w-2xl text-muted-foreground">{finalBody}</p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <WhatsAppButton>Falar no WhatsApp</WhatsAppButton>
+              <Button asChild variant="secondary">
+                <a href={`mailto:${siteConfig.supportEmail}`}>Enviar email</a>
+              </Button>
+            </div>
+          </div>
+        </Section>
+      </main>
       <SiteFooter />
-    </main>
+    </>
   );
 }

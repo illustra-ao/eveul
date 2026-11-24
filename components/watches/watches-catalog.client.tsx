@@ -1,256 +1,178 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useMemo, useState } from "react";
+
+import { cn } from "@/lib/utils";
+import { Section } from "@/components/brand/section";
+import { ProductCard } from "@/components/brand/product-card";
+import { WhatsAppButton } from "@/components/brand/whatsapp-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  buildProductWhatsAppLink,
-  defaultWhatsAppLink,
-  siteConfig,
-} from "@/lib/site-config";
 import type { ProductCardVM } from "./watches-catalog-supabase";
 
-type Filter = "Todos" | "Signature" | "Limited" | "Classic";
-type Sort = "Relevância" | "Preço: menor" | "Preço: maior" | "Nome";
+const collections = ["Signature", "Limited", "Classic"] as const;
+type Collection = (typeof collections)[number];
+type Filter = "Todos" | Collection;
+type Sort = "recentes" | "preco-asc" | "preco-desc";
 
-function formatKz(value: number) {
-  return new Intl.NumberFormat("pt-PT").format(value);
+const sortLabels: Record<Sort, string> = {
+  recentes: "Mais recentes",
+  "preco-asc": "Preço: mais baixo",
+  "preco-desc": "Preço: mais alto",
+};
+
+/** "signature" → "Signature"; qualquer outro valor → "Todos" */
+export function parseCollection(value?: string | null): Filter {
+  const match = collections.find((c) => c.toLowerCase() === value?.toLowerCase());
+  return match ?? "Todos";
 }
 
 export function WatchesCatalogClient({
   initialProducts,
+  initialCollection,
 }: {
   initialProducts: ProductCardVM[];
+  /** valor de ?colecao= lido no servidor */
+  initialCollection?: string | null;
 }) {
-  const [filter, setFilter] = useState<Filter>("Todos");
-  const [sort, setSort] = useState<Sort>("Relevância");
-  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<Filter>(() => parseCollection(initialCollection));
+  const [sort, setSort] = useState<Sort>("recentes");
 
-  const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase();
+  const counts = useMemo(() => {
+    const map = new Map<Filter, number>([["Todos", initialProducts.length]]);
+    for (const c of collections) {
+      map.set(c, initialProducts.filter((p) => p.collection === c).length);
+    }
+    return map;
+  }, [initialProducts]);
 
-    let list = initialProducts.filter((p) => {
-      const matchesFilter = filter === "Todos" ? true : p.collection === filter;
-      const matchesQuery =
-        !query ||
-        p.name.toLowerCase().includes(query) ||
-        p.slug.toLowerCase().includes(query);
-      return matchesFilter && matchesQuery;
-    });
+  const visible = useMemo(() => {
+    const list = filter === "Todos" ? initialProducts : initialProducts.filter((p) => p.collection === filter);
+    if (sort === "preco-asc") return [...list].sort((a, b) => a.price - b.price);
+    if (sort === "preco-desc") return [...list].sort((a, b) => b.price - a.price);
+    return list; // já vem ordenado por data (servidor)
+  }, [filter, sort, initialProducts]);
 
-    list = [...list].sort((a, b) => {
-      if (sort === "Preço: menor") return a.price - b.price;
-      if (sort === "Preço: maior") return b.price - a.price;
-      if (sort === "Nome") return a.name.localeCompare(b.name);
-      return 0;
-    });
+  // Mantém o filtro no URL (partilhável, e o "voltar" do browser volta ao mesmo filtro)
+  const selectFilter = (next: Filter) => {
+    setFilter(next);
+    const url = new URL(window.location.href);
+    if (next === "Todos") url.searchParams.delete("colecao");
+    else url.searchParams.set("colecao", next.toLowerCase());
+    window.history.replaceState(null, "", url);
+  };
 
-    return list;
-  }, [filter, sort, q, initialProducts]);
+  const filters: Filter[] = ["Todos", ...collections];
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[color:var(--gold)]/8 blur-[150px]" />
-        <div className="absolute -right-56 top-10 h-[620px] w-[620px] rounded-full bg-white/5 blur-[160px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/55 to-black/90" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
+    <>
+      <Section spacing="compact" className="pb-8 md:pb-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-              COLECÇÃO
-            </div>
-            <h1 className="mt-4 font-[var(--font-display)] text-5xl leading-[0.95] tracking-tight md:text-6xl">
-              Relógios Eveul.
-              <br />
-              Presença em cada detalhe.
-            </h1>
-            <p className="mt-6 text-sm leading-7 text-muted-foreground">
-              Explore as referências disponíveis. Edições limitadas, acabamento
-              premium e compra simples — com suporte local.
+          <div>
+            <h1 className="rule-top text-h1">Relógios</h1>
+            <p className="mt-4 max-w-md text-muted-foreground">
+              Três colecções, poucas peças de cada. Encomenda pelo WhatsApp e recebe em Luanda em 24 a 72 horas.
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-3 md:max-w-[520px]">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Pesquisar modelos..."
-                className="h-11 rounded-full bg-black/25 text-foreground placeholder:text-muted-foreground"
-              />
-
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as Sort)}
-                className="h-11 rounded-full border border-border bg-card/20 px-4 text-xs tracking-[0.18em] text-foreground backdrop-blur"
-              >
-                <option>Relevância</option>
-                <option>Preço: menor</option>
-                <option>Preço: maior</option>
-                <option>Nome</option>
-              </select>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Pill
-                active={filter === "Todos"}
-                onClick={() => setFilter("Todos")}
-              >
-                Todos
-              </Pill>
-              <Pill
-                active={filter === "Signature"}
-                onClick={() => setFilter("Signature")}
-              >
-                Signature
-              </Pill>
-              <Pill
-                active={filter === "Limited"}
-                onClick={() => setFilter("Limited")}
-              >
-                Limited
-              </Pill>
-              <Pill
-                active={filter === "Classic"}
-                onClick={() => setFilter("Classic")}
-              >
-                Classic
-              </Pill>
-            </div>
+          <div className="flex items-center gap-3">
+            <label htmlFor="ordenar" className="text-meta text-muted-foreground">
+              Ordenar
+            </label>
+            <select
+              id="ordenar"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              className="h-11 rounded-sm border border-input bg-background px-3 text-base text-foreground"
+            >
+              {(Object.keys(sortLabels) as Sort[]).map((s) => (
+                <option key={s} value={s}>
+                  {sortLabels[s]}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        <div className="mt-10 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {filtered.map((p) => (
-            <article
-              key={p.id}
-              className="group relative overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur"
-            >
-              {p.badge && (
-                <div className="absolute left-4 top-4 z-10 rounded-full border border-border bg-black/30 px-3 py-1 text-[10px] tracking-[0.22em] text-[color:var(--gold)] backdrop-blur">
-                  {p.badge}
-                </div>
-              )}
+        <div
+          role="group"
+          aria-label="Filtrar por colecção"
+          className="-mx-gutter mt-8 flex gap-2 overflow-x-auto px-gutter pb-1 [scrollbar-width:none] md:mx-0 md:px-0"
+        >
+          {filters.map((f) => {
+            const active = filter === f;
+            return (
+              <button
+                key={f}
+                type="button"
+                aria-pressed={active}
+                onClick={() => selectFilter(f)}
+                className={cn(
+                  "inline-flex h-11 shrink-0 items-center gap-2 rounded-sm border px-4 font-display text-sm font-semibold uppercase tracking-button transition-colors",
+                  active
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                )}
+              >
+                {f}
+                <span className={cn("tabular text-meta font-medium", active ? "text-background/70" : "text-muted-foreground")}>
+                  {counts.get(f) ?? 0}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </Section>
 
-              <div className="relative aspect-[4/5] w-full overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/65" />
-                <Image
-                  src={p.image ?? siteConfig.fallbackProductImage}
-                  alt={p.name}
-                  fill
-                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover transition duration-700 group-hover:scale-[1.03]"
-                  unoptimized
+      <Section spacing="none" className="pb-section">
+        <p aria-live="polite" className="sr-only">
+          {visible.length} {visible.length === 1 ? "modelo" : "modelos"}
+        </p>
+
+        {visible.length === 0 ? (
+          <div className="border border-border px-6 py-12 text-center">
+            <p className="text-h3">Sem modelos nesta colecção, por agora</p>
+            <p className="mt-2 text-muted-foreground">Pergunta-nos pelas próximas edições.</p>
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button variant="secondary" onClick={() => selectFilter("Todos")}>
+                Ver todos
+              </Button>
+              <WhatsAppButton>Perguntar no WhatsApp</WhatsAppButton>
+            </div>
+          </div>
+        ) : (
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            {visible.map((p, i) => (
+              <li key={p.id}>
+                <ProductCard
+                  className="h-full"
+                  priority={i < 2}
+                  sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, 50vw"
+                  product={{
+                    slug: p.slug,
+                    name: p.name,
+                    price: p.price,
+                    collection: p.collection,
+                    badge: p.badge,
+                    image: p.image,
+                  }}
                 />
-              </div>
-
-              <div className="p-5">
-                <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                  {p.collection.toUpperCase()}
-                </div>
-                <h3 className="mt-2 font-[var(--font-display)] text-xl tracking-tight">
-                  {p.name}
-                </h3>
-
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="text-sm text-foreground">
-                    <span className="text-[color:var(--gold)]">
-                      {p.currency}
-                    </span>{" "}
-                    {formatKz(p.price)}
-                  </div>
-                  <Link
-                    href={`/watches/${p.slug}`}
-                    className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
-                  >
-                    VER →
-                  </Link>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 flex-1 rounded-full border-border bg-black/20 backdrop-blur hover:bg-black/35"
-                  >
-                    <Link href={`/watches/${p.slug}`}>Detalhes</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:opacity-90"
-                  >
-                    <a
-                      href={buildProductWhatsAppLink(p.name)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Reservar
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="mt-10 rounded-3xl border border-border bg-card/15 p-8 text-sm text-muted-foreground backdrop-blur">
-            Nenhum modelo encontrado. Ajuste o filtro ou a pesquisa.
-          </div>
+              </li>
+            ))}
+          </ul>
         )}
+      </Section>
 
-        <div className="mt-14 rounded-4xl border border-border bg-card/15 p-8 backdrop-blur md:p-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                PRECISA DE AJUDA A ESCOLHER?
-              </div>
-              <div className="mt-2 font-[var(--font-display)] text-2xl tracking-tight">
-                Fale connosco para recomendações por estilo e orçamento.
-              </div>
-            </div>
-
-            <Button
-              asChild
-              className="h-11 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
-            >
-              <a href={defaultWhatsAppLink} target="_blank" rel="noreferrer">
-                WhatsApp
-              </a>
-            </Button>
+      <Section tone="raised" spacing="compact" className="border-t border-border">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-h2">Não sabes qual escolher?</h2>
+            <p className="mt-2 text-muted-foreground">
+              Diz-nos o estilo e o orçamento. Sugerimos o modelo certo, também para oferecer.
+            </p>
           </div>
+          <WhatsAppButton className="w-full md:w-auto">Pedir uma sugestão</WhatsAppButton>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function Pill({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "h-10 rounded-full border px-5 text-xs tracking-[0.18em] backdrop-blur transition",
-        active
-          ? "border-[color:var(--gold)]/40 bg-[color:var(--gold)]/10 text-foreground"
-          : "border-border bg-card/15 text-muted-foreground hover:bg-card/25 hover:text-foreground",
-      ].join(" ")}
-    >
-      {children}
-    </button>
+      </Section>
+    </>
   );
 }

@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { SiteNavbar } from "@/components/site-navbar";
-import { SiteFooter } from "@/components/site-footer";
-import { AdminTabs } from "@/components/admin/admin-tabs";
+import { AdminShell } from "@/components/admin/admin-shell";
+import { SetupNotice, StatusBadge } from "@/components/admin/admin-ui";
 import { ProductRowActions } from "@/components/admin/product-row-actions";
-import { siteConfig } from "@/lib/site-config";
+import { Button } from "@/components/ui/button";
+import { formatKz, siteConfig } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
 
@@ -35,68 +35,13 @@ function AdminSetupState({ message }: { message: string }) {
   const copy = getAdminSetupCopy(message);
 
   return (
-    <main className="relative">
-      <SiteNavbar />
-      <div className="pt-24">
-        <section className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="rounded-4xl border border-border bg-card/15 p-8 backdrop-blur md:p-10">
-            <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-              ADMIN
-            </div>
-            <h1 className="mt-4 font-[var(--font-display)] text-4xl tracking-tight">
-              {copy.title}
-            </h1>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              {copy.body}
-            </p>
-            <div className="mt-6 rounded-2xl border border-border bg-black/15 p-4 text-sm text-muted-foreground">
-              {message}
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/"
-                className="rounded-full border border-border bg-card/10 px-5 py-3 text-xs tracking-[0.18em] text-foreground backdrop-blur hover:bg-card/20"
-              >
-                VOLTAR À LOJA
-              </Link>
-              <Link
-                href="/admin/logout"
-                className="rounded-full bg-primary px-5 py-3 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
-              >
-                SAIR
-              </Link>
-            </div>
-          </div>
-        </section>
-      </div>
-      <SiteFooter />
-    </main>
-  );
-}
-
-function Meta({
-  label,
-  value,
-  gold,
-}: {
-  label: string;
-  value: string;
-  gold?: boolean;
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-black/10 p-3">
-      <div className="text-[10px] tracking-[0.22em] text-muted-foreground">
-        {label.toUpperCase()}
-      </div>
-      <div
-        className={[
-          "mt-1 text-sm",
-          gold ? "text-[color:var(--gold)]" : "text-foreground",
-        ].join(" ")}
-      >
-        {value}
-      </div>
-    </div>
+    <AdminShell active="products" title="Produtos">
+      <SetupNotice title={copy.title} body={copy.body} message={message}>
+        <Button asChild variant="outline">
+          <Link href="/">Voltar à loja</Link>
+        </Button>
+      </SetupNotice>
+    </AdminShell>
   );
 }
 
@@ -154,140 +99,75 @@ export default async function AdminProductsPage() {
     return <AdminSetupState message={message} />;
   }
 
+  const products = data ?? [];
+
   return (
-    <main className="relative">
-      <SiteNavbar />
-      <div className="pt-24">
-        <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-                ADMIN
-              </div>
-              <h1 className="mt-4 font-[var(--font-display)] text-4xl tracking-tight">
-                Produtos
-              </h1>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Criar, editar, publicar e gerir imagens dos produtos.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/admin/products/new"
-                className="rounded-full bg-primary px-5 py-3 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
-              >
-                NOVO PRODUTO
-              </Link>
-              <Link
-                href="/admin/logout"
-                className="rounded-full border border-border bg-card/10 px-5 py-3 text-xs tracking-[0.18em] text-muted-foreground backdrop-blur hover:bg-card/20 hover:text-foreground"
-              >
-                SAIR
-              </Link>
-            </div>
+    <AdminShell
+      active="products"
+      title="Produtos"
+      description={`${products.length} ${products.length === 1 ? "produto" : "produtos"} · criar, editar, publicar e gerir imagens.`}
+      actions={
+        <Button asChild>
+          <Link href="/admin/products/new">Novo produto</Link>
+        </Button>
+      }
+    >
+      {products.length === 0 ? (
+        <div className="rounded-md border border-dashed border-border p-10 text-center">
+          <p className="font-medium">Ainda não há produtos.</p>
+          <p className="mt-1 text-muted-foreground">Cria o primeiro e depois adiciona as imagens no editor.</p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-md border border-border bg-card">
+          {/* Cabeçalho só em md+ */}
+          <div className="hidden grid-cols-12 gap-4 border-b border-border px-5 py-3 text-meta font-medium text-muted-foreground md:grid">
+            <div className="col-span-5">Produto</div>
+            <div className="col-span-2">Colecção</div>
+            <div className="col-span-2">Preço</div>
+            <div className="col-span-1">Estado</div>
+            <div className="col-span-2 text-right">Acções</div>
           </div>
 
-          <AdminTabs active="products" />
-
-          <div className="mt-8 overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur">
-            {/* Header só em md+ */}
-            <div className="hidden md:grid grid-cols-12 gap-4 border-b border-border px-5 py-3 text-[11px] tracking-[0.22em] text-muted-foreground">
-              <div className="col-span-4">PRODUTO</div>
-              <div className="col-span-2">COLECÇÃO</div>
-              <div className="col-span-2">PREÇO</div>
-              <div className="col-span-2">ESTADO</div>
-              <div className="col-span-2 text-right">ACÇÕES</div>
-            </div>
-
-            {(data ?? []).map((p) => (
-              <div
+          <ul>
+            {products.map((p) => (
+              <li
                 key={p.id}
-                className={[
-                  // mobile: card; md+: linha de tabela
-                  "border-b border-border/60 last:border-b-0",
-                  "p-5 md:p-0",
-                  "md:grid md:grid-cols-12 md:gap-4 md:px-5 md:py-4",
-                ].join(" ")}
+                className="grid grid-cols-[4rem_1fr] gap-x-4 gap-y-3 border-b border-border p-4 last:border-b-0 md:grid-cols-12 md:items-center md:px-5 md:py-3"
               >
-                {/* Nome / slug */}
-                <div className="md:col-span-4">
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border bg-black/25">
-                      <Image
-                        src={p.image ?? siteConfig.fallbackProductImage}
-                        alt={p.name}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/0 to-black/30" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm text-foreground">
-                        {p.name}
-                      </div>
-                      <div className="mt-1 break-all text-[11px] tracking-[0.22em] text-muted-foreground">
-                        {p.slug}
-                      </div>
-                    </div>
-                  </div>
+                <div className="relative size-16 overflow-hidden rounded-sm bg-sunken md:hidden">
+                  <Image src={p.image ?? siteConfig.fallbackProductImage} alt="" fill sizes="64px" className="object-cover" />
+                </div>
 
-                  {/* Mobile: mini info */}
-                  <div className="mt-4 grid grid-cols-2 gap-3 md:hidden">
-                    <Meta label="Colecção" value={p.collection} />
-                    <Meta
-                      label="Preço"
-                      value={`${p.currency} ${new Intl.NumberFormat("pt-PT").format(p.price)}`}
-                      gold
-                    />
+                <div className="min-w-0 md:col-span-5 md:flex md:items-center md:gap-4">
+                  <div className="relative hidden size-12 shrink-0 overflow-hidden rounded-sm bg-sunken md:block">
+                    <Image src={p.image ?? siteConfig.fallbackProductImage} alt="" fill sizes="48px" className="object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <Link href={`/admin/products/${p.id}`} className="block truncate font-medium hover:underline">
+                      {p.name}
+                    </Link>
+                    <p className="truncate text-meta text-muted-foreground">/{p.slug}</p>
+                    <p className="mt-1 text-meta text-muted-foreground md:hidden">
+                      {p.collection} · <span className="tabular text-foreground">{formatKz(p.price)}</span>
+                    </p>
                   </div>
                 </div>
 
-                {/* Desktop: colecção */}
-                <div className="hidden md:block md:col-span-2 text-sm text-foreground">
-                  {p.collection}
+                <div className="hidden text-sm md:col-span-2 md:block">{p.collection}</div>
+                <div className="tabular hidden text-sm md:col-span-2 md:block">{formatKz(p.price)}</div>
+
+                <div className="col-start-2 md:col-span-1 md:col-start-auto">
+                  <StatusBadge status={p.status} />
                 </div>
 
-                {/* Desktop: preço */}
-                <div className="hidden md:block md:col-span-2 text-sm text-foreground">
-                  <span className="text-[color:var(--gold)]">{p.currency}</span>{" "}
-                  {new Intl.NumberFormat("pt-PT").format(p.price)}
+                <div className="col-span-2 md:col-span-2">
+                  <ProductRowActions id={p.id} slug={p.slug} status={p.status} />
                 </div>
-
-                {/* Estado */}
-                <div className="mt-4 md:mt-0 md:col-span-2 text-sm text-foreground">
-                  <span
-                    className={[
-                      "inline-flex items-center rounded-full border px-3 py-1 text-[10px] tracking-[0.22em] backdrop-blur",
-                      p.status === "active"
-                        ? "border-[color:var(--gold)]/35 bg-[color:var(--gold)]/10 text-foreground"
-                        : p.status === "draft"
-                          ? "border-border bg-black/20 text-muted-foreground"
-                          : "border-border bg-black/30 text-muted-foreground",
-                    ].join(" ")}
-                  >
-                    {p.status.toUpperCase()}
-                  </span>
-                </div>
-
-                {/* Acções */}
-                <div className="mt-5 md:mt-0 md:col-span-2 md:text-right">
-                  {/* no mobile, alinha à esquerda e permite quebrar */}
-                  <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 md:justify-end">
-                    <ProductRowActions
-                      id={p.id}
-                      slug={p.slug}
-                      status={p.status}
-                    />
-                  </div>
-                </div>
-              </div>
+              </li>
             ))}
-          </div>
-        </section>
-      </div>
-      <SiteFooter />
-    </main>
+          </ul>
+        </div>
+      )}
+    </AdminShell>
   );
 }

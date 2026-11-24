@@ -14,7 +14,11 @@ export type ProductCardVM = {
   image: string;
 };
 
-export async function WatchesCatalogSupabase() {
+export async function WatchesCatalogSupabase({
+  initialCollection,
+}: {
+  initialCollection?: string | null;
+} = {}) {
   try {
     const { data: products, error } = await supabaseAdmin
       .from("products")
@@ -57,7 +61,7 @@ export async function WatchesCatalogSupabase() {
       image: firstImageByProduct.get(p.id) ?? getPrimaryImage(),
     }));
 
-    return <WatchesCatalogClient initialProducts={cards} />;
+    return <WatchesCatalogClient initialProducts={cards} initialCollection={initialCollection} />;
   } catch {
     const cards = fallbackProducts.map((product) => ({
       id: product.id,
@@ -70,6 +74,6 @@ export async function WatchesCatalogSupabase() {
       image: getPrimaryImage(product.images),
     }));
 
-    return <WatchesCatalogClient initialProducts={cards} />;
+    return <WatchesCatalogClient initialProducts={cards} initialCollection={initialCollection} />;
   }
 }

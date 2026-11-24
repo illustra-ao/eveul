@@ -1,7 +1,6 @@
 // app/admin/products/[id]/page.tsx
 import { notFound } from "next/navigation";
-import { SiteNavbar } from "@/components/site-navbar";
-import { SiteFooter } from "@/components/site-footer";
+import { AdminShell } from "@/components/admin/admin-shell";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { AdminProductEditorClient } from "@/components/admin/admin-product-editor-client";
 
@@ -32,12 +31,8 @@ export default async function AdminProductEditPage({
   if (iErr) throw new Error(iErr.message);
 
   return (
-    <main className="relative">
-      <SiteNavbar />
-      <div className="pt-24">
-        <AdminProductEditorClient product={product} initialImages={images ?? []} />
-      </div>
-      <SiteFooter />
-    </main>
+    <AdminShell active="products">
+      <AdminProductEditorClient product={product} initialImages={images ?? []} />
+    </AdminShell>
   );
 }

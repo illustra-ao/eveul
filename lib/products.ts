@@ -33,10 +33,10 @@ export const fallbackProducts: FallbackProduct[] = [
     badge: "BEST SELLER",
     images: ["/images/eveul3.png", "/images/feature-4.webp"],
     description:
-      "Uma assinatura Eveul com presenca forte, mecanismo aberto e acabamento premium para uso diario.",
+      "Uma assinatura Eveul com presença forte, mecanismo aberto e acabamento premium para uso diário.",
     highlights: ["Open Gear", "Vidro de safira", "Caixa premium"],
     specs: [
-      { k: "Movimento", v: "Automatico" },
+      { k: "Movimento", v: "Automático" },
       { k: "Vidro", v: "Safira" },
       { k: "Garantia", v: "12 meses" },
       { k: "Envio", v: "Luanda 24-72h" },
@@ -52,11 +52,11 @@ export const fallbackProducts: FallbackProduct[] = [
     badge: "LIMITED",
     images: ["/images/eveul2.png", "/images/feature-3.webp"],
     description:
-      "Edicao limitada com detalhe mecanico em destaque, criada para quem prefere uma peca rara e expressiva.",
-    highlights: ["Edicao limitada", "Open Gear", "Acabamento premium"],
+      "Edição limitada com detalhe mecânico em destaque, criada para quem prefere uma peça rara e expressiva.",
+    highlights: ["Edição limitada", "Open Gear", "Acabamento premium"],
     specs: [
-      { k: "Movimento", v: "Automatico" },
-      { k: "Edicao", v: "Limitada" },
+      { k: "Movimento", v: "Automático" },
+      { k: "Edição", v: "Limitada" },
       { k: "Garantia", v: "12 meses" },
       { k: "Envio", v: "Luanda 24-72h" },
     ],
@@ -71,11 +71,11 @@ export const fallbackProducts: FallbackProduct[] = [
     badge: "NEW",
     images: ["/images/feature-1.webp", "/images/watch-thumb.webp"],
     description:
-      "Um modelo classico e versatil, pensado para acompanhar dias de trabalho, eventos e presentes especiais.",
-    highlights: ["Classico", "Versatil", "Suporte local"],
+      "Um modelo clássico e versátil, pensado para acompanhar dias de trabalho, eventos e presentes especiais.",
+    highlights: ["Clássico", "Versátil", "Suporte local"],
     specs: [
       { k: "Movimento", v: "Quartzo premium" },
-      { k: "Correia", v: "Couro / Aco" },
+      { k: "Correia", v: "Couro / Aço" },
       { k: "Garantia", v: "12 meses" },
       { k: "Envio", v: "Luanda 24-72h" },
     ],
@@ -90,10 +90,10 @@ export const fallbackProducts: FallbackProduct[] = [
     badge: "BEST SELLER",
     images: ["/images/feature-2.webp", "/images/eveul1.png"],
     description:
-      "A linguagem Signature com tons dourados subtis, boa presenca no pulso e leitura elegante.",
+      "A linguagem Signature com tons dourados subtis, boa presença no pulso e leitura elegante.",
     highlights: ["Signature", "Dourado subtil", "Vidro de safira"],
     specs: [
-      { k: "Movimento", v: "Automatico" },
+      { k: "Movimento", v: "Automático" },
       { k: "Vidro", v: "Safira" },
       { k: "Garantia", v: "12 meses" },
       { k: "Envio", v: "Luanda 24-72h" },
