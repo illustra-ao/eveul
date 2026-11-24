@@ -5,6 +5,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { supabaseClient } from "@/lib/supabase/client";
 import { WatchProductPage } from "@/components/watches/watch-product-page";
 import {
+  parseAvailability,
+  parseCategory,
   getFallbackProductBySlug,
   getFallbackRelatedProducts,
   type FallbackProduct,
@@ -23,6 +25,8 @@ type ProductRow = {
   description: string | null;
   highlights: string[];
   status: "active" | "draft" | "archived";
+  category: string | null;
+  availability: string | null;
 };
 
 type ImageRow = {
@@ -46,6 +50,8 @@ function toWatchProduct(product: FallbackProduct) {
     highlights: product.highlights,
     specs: product.specs,
     stockLabel: "Disponível",
+    category: parseCategory(product.category),
+    availability: parseAvailability(product.availability),
   };
 }
 
@@ -88,7 +94,7 @@ export default async function WatchSlugPage({
     const { data: product, error: pErr } = await supabaseClient
       .from("products")
       .select(
-        "id,slug,name,collection,price,currency,badge,description,highlights,status",
+        "id,slug,name,collection,price,currency,badge,description,highlights,status,category,availability",
       )
       .eq("slug", slug)
       .eq("status", "active")
@@ -113,10 +119,11 @@ export default async function WatchSlugPage({
     const { data: related } = await supabaseClient
       .from("products")
       .select(
-        "id,slug,name,collection,price,currency,badge,description,highlights,status",
+        "id,slug,name,collection,price,currency,badge,description,highlights,status,category,availability",
       )
       .eq("status", "active")
       .eq("collection", product.collection)
+      .eq("category", parseCategory(product.category))
       .neq("id", product.id)
       .order("created_at", { ascending: false })
       .limit(4)
@@ -156,6 +163,8 @@ export default async function WatchSlugPage({
         { k: "Envio", v: "Luanda 24-72h" },
       ],
       stockLabel: "Disponível",
+      category: parseCategory(product.category),
+      availability: parseAvailability(product.availability),
     };
 
     const vmRelated = (related ?? []).map((p) => ({
@@ -170,6 +179,8 @@ export default async function WatchSlugPage({
       description: p.description ?? "",
       highlights: Array.isArray(p.highlights) ? p.highlights : [],
       specs: [],
+      category: parseCategory(p.category),
+      availability: parseAvailability(p.availability),
     }));
 
     return renderProductPage(vmProduct, vmRelated);

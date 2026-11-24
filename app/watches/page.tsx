@@ -6,24 +6,24 @@ import { WatchesCatalogSupabase } from "@/components/watches/watches-catalog-sup
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Relógios",
-  description: "Colecções Signature, Limited e Classic. Encomenda pelo WhatsApp com entrega em Luanda.",
+  title: "Relógios e óculos",
+  description: "Relógios e óculos Eveul, colecções Signature, Limited e Classic. Encomenda pelo WhatsApp com entrega em Luanda.",
 };
 
 export default async function WatchesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ colecao?: string | string[] }>;
+  searchParams: Promise<{ colecao?: string | string[]; categoria?: string | string[] }>;
 }) {
-  const { colecao } = await searchParams;
-  const initialCollection = Array.isArray(colecao) ? colecao[0] : colecao;
+  const { colecao, categoria } = await searchParams;
+  const first = (v?: string | string[]) => (Array.isArray(v) ? v[0] : v);
 
   return (
     <>
       <SiteNavbar />
       {/* pt-16: altura da navbar fixa */}
       <main className="pt-16">
-        <WatchesCatalogSupabase initialCollection={initialCollection} />
+        <WatchesCatalogSupabase initialCollection={first(colecao)} initialCategory={first(categoria)} />
       </main>
       <SiteFooter />
     </>

@@ -21,9 +21,27 @@ create table if not exists public.products (
   description text,
   highlights text[] not null default '{}',
   status text not null default 'draft' check (status in ('active', 'draft', 'archived')),
+  category text not null default 'watch',
+  availability text not null default 'available',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Bases criadas antes destas colunas (ver supabase/migrations/20261124_products_category_availability.sql)
+alter table public.products
+  add column if not exists category text not null default 'watch',
+  add column if not exists availability text not null default 'available';
+
+alter table public.products drop constraint if exists products_category_check;
+alter table public.products
+  add constraint products_category_check check (category in ('watch', 'eyewear'));
+
+alter table public.products drop constraint if exists products_availability_check;
+alter table public.products
+  add constraint products_availability_check check (availability in ('available', 'last', 'soldout'));
+
+create index if not exists products_status_category_idx
+  on public.products (status, category, created_at desc);
 
 drop trigger if exists set_products_updated_at on public.products;
 create trigger set_products_updated_at

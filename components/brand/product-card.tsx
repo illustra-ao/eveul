@@ -15,7 +15,7 @@ export type ProductCardData = {
   imageAlt?: string;
   /** Linha curta de detalhe: "Ouro rosa · 42mm" */
   detail?: string | null;
-  /** Ainda não existe no Supabase; o padrão é "available" */
+  /** products.availability; o padrão é "available" */
   availability?: Availability;
 };
 
@@ -87,7 +87,7 @@ export function ProductCard({
         <div className="mt-auto flex items-baseline justify-between gap-3 pt-2">
           {soldOut ? (
             <>
-              <span className="text-meta text-muted-foreground">Esgotado</span>
+              {/* o badge já diz "Esgotado": aqui só a acção */}
               <a
                 href={buildProductWhatsAppLink(name, { intent: "restock" })}
                 target="_blank"
