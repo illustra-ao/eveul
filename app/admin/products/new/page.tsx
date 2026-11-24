@@ -1,9 +1,11 @@
 // app/admin/products/new/page.tsx
 import { redirect } from "next/navigation";
-import { SiteNavbar } from "@/components/site-navbar";
-import { SiteFooter } from "@/components/site-footer";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import Link from "next/link";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { AdminShell } from "@/components/admin/admin-shell";
+import { Field, Panel, selectClass, textareaClass } from "@/components/admin/admin-ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type Collection = "Signature" | "Limited" | "Classic";
 type Status = "active" | "draft" | "archived";
@@ -81,192 +83,83 @@ async function createProduct(formData: FormData) {
 
 export default function AdminProductNewPage() {
   return (
-    <main className="relative">
-      <SiteNavbar />
-      <div className="pt-24">
-        <section className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8 py-10">
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-                ADMIN
-              </div>
-              <h1 className="mt-4 font-[var(--font-display)] text-4xl tracking-tight">
-                Novo produto
-              </h1>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Crie o produto e, em seguida, adicione imagens no editor.
-              </p>
-            </div>
+    <AdminShell
+      active="products"
+      narrow
+      title="Novo produto"
+      description="Cria o produto e depois adiciona as imagens no editor."
+    >
+      <form action={createProduct} className="space-y-6">
+        <Panel title="Informação">
+          <div className="grid gap-5 md:grid-cols-2">
+            <Field label="Nome do produto" htmlFor="name" className="md:col-span-2">
+              <Input id="name" name="name" required placeholder="Eveul Jupiter" />
+            </Field>
+
+            <Field label="Slug" hint="Vazio = gerado a partir do nome" htmlFor="slug">
+              <Input id="slug" name="slug" placeholder="eveul-jupiter" />
+            </Field>
+
+            <Field label="Colecção" htmlFor="collection">
+              <select id="collection" name="collection" defaultValue="Signature" className={selectClass}>
+                <option value="Signature">Signature</option>
+                <option value="Limited">Limited</option>
+                <option value="Classic">Classic</option>
+              </select>
+            </Field>
+
+            <Field label="Descrição" hint="Aparece na página do produto" htmlFor="description" className="md:col-span-2">
+              <textarea
+                id="description"
+                name="description"
+                rows={5}
+                placeholder="O relógio, o acabamento, para quem é…"
+                className={textareaClass}
+              />
+            </Field>
+
+            <Field label="Destaques" hint="Separados por vírgulas" htmlFor="highlights" className="md:col-span-2">
+              <Input id="highlights" name="highlights" placeholder="Open Gear, Vidro de safira, Caixa premium" />
+            </Field>
           </div>
+        </Panel>
 
-          <form
-            action={createProduct}
-            className="mt-8 rounded-4xl border border-border bg-card/15 p-8 backdrop-blur"
-          >
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Nome */}
-              <Field label="Nome do produto" hint="Ex.: Eveul Jupiter">
-                <input
-                  name="name"
-                  required
-                  placeholder="Eveul Jupiter"
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[color:var(--gold)]/40"
-                />
-              </Field>
+        <Panel title="Preço e publicação">
+          <div className="grid gap-5 md:grid-cols-2">
+            <Field label="Preço" hint="Só números, ex.: 189000" htmlFor="price">
+              <Input id="price" name="price" required inputMode="numeric" placeholder="189000" />
+            </Field>
 
-              {/* Slug */}
-              <Field
-                label="Slug"
-                hint="Se deixar vazio, geramos automaticamente a partir do nome."
-              >
-                <input
-                  name="slug"
-                  placeholder="eveul-jupiter"
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[color:var(--gold)]/40"
-                />
-              </Field>
+            <Field label="Moeda" htmlFor="currency">
+              <Input id="currency" name="currency" defaultValue="Kz" />
+            </Field>
 
-              {/* Colecção */}
-              <Field label="Colecção">
-                <select
-                  name="collection"
-                  defaultValue="Signature"
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none focus:border-[color:var(--gold)]/40"
-                >
-                  <option value="Signature">Signature</option>
-                  <option value="Limited">Limited</option>
-                  <option value="Classic">Classic</option>
-                </select>
-              </Field>
+            <Field label="Badge" hint="Opcional" htmlFor="badge">
+              <select id="badge" name="badge" defaultValue="" className={selectClass}>
+                <option value="">Sem badge</option>
+                <option value="BEST SELLER">Best seller</option>
+                <option value="LIMITED">Limited</option>
+                <option value="NEW">New</option>
+              </select>
+            </Field>
 
-              {/* Badge */}
-              <Field label="Badge" hint="Opcional">
-                <select
-                  name="badge"
-                  defaultValue=""
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none focus:border-[color:var(--gold)]/40"
-                >
-                  <option value="">Sem badge</option>
-                  <option value="BEST SELLER">BEST SELLER</option>
-                  <option value="LIMITED">LIMITED</option>
-                  <option value="NEW">NEW</option>
-                </select>
-              </Field>
+            <Field label="Estado" htmlFor="status">
+              <select id="status" name="status" defaultValue="draft" className={selectClass}>
+                <option value="draft">Rascunho</option>
+                <option value="active">Publicado</option>
+                <option value="archived">Arquivado</option>
+              </select>
+            </Field>
+          </div>
+        </Panel>
 
-              {/* Preço */}
-              <Field label="Preço (Kz)" hint="Apenas números. Ex.: 189000">
-                <input
-                  name="price"
-                  required
-                  inputMode="numeric"
-                  placeholder="189000"
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[color:var(--gold)]/40"
-                />
-              </Field>
-
-              {/* Moeda */}
-              <Field label="Moeda">
-                <input
-                  name="currency"
-                  defaultValue="Kz"
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[color:var(--gold)]/40"
-                />
-              </Field>
-
-              {/* Estado */}
-              <Field label="Estado">
-                <select
-                  name="status"
-                  defaultValue="draft"
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none focus:border-[color:var(--gold)]/40"
-                >
-                  <option value="draft">draft</option>
-                  <option value="active">active</option>
-                  <option value="archived">archived</option>
-                </select>
-              </Field>
-
-              {/* Highlights */}
-              <Field
-                label="Highlights"
-                hint="Lista separada por vírgulas. Ex.: Open Gear, Safira, Titânio"
-              >
-                <input
-                  name="highlights"
-                  placeholder="Open Gear, Vidro de safira, Caixa premium"
-                  className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[color:var(--gold)]/40"
-                />
-              </Field>
-            </div>
-
-            {/* Descrição */}
-            <div className="mt-6">
-              <Field
-                label="Descrição"
-                hint="Opcional (aparece na página do produto)."
-              >
-                <textarea
-                  name="description"
-                  rows={5}
-                  placeholder="Descreva o relógio, o acabamento e a proposta..."
-                  className="w-full rounded-3xl border border-border bg-black/20 p-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-[color:var(--gold)]/40"
-                />
-              </Field>
-            </div>
-
-            {/* Actions */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                Ao criar, será redireccionado para o editor do produto para
-                adicionar imagens.
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/admin/products"
-                  className="h-11 inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-6 text-xs tracking-[0.18em] text-foreground backdrop-blur hover:bg-card/20"
-                >
-                  Cancelar
-                </Link>
-
-                <button
-                  type="submit"
-                  className="h-11 inline-flex items-center justify-center rounded-full bg-primary px-6 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
-                >
-                  Criar produto
-                </button>
-              </div>
-            </div>
-          </form>
-        </section>
-      </div>
-      <SiteFooter />
-    </main>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <div className="flex items-end justify-between gap-4">
-        <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-          {label.toUpperCase()}
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <Button asChild variant="outline">
+            <Link href="/admin/products">Cancelar</Link>
+          </Button>
+          <Button type="submit">Criar e adicionar imagens</Button>
         </div>
-        {hint ? (
-          <div className="text-[11px] tracking-[0.18em] text-muted-foreground/80">
-            {hint}
-          </div>
-        ) : null}
-      </div>
-      <div className="mt-2">{children}</div>
-    </label>
+      </form>
+    </AdminShell>
   );
 }

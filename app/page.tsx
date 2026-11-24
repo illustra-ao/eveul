@@ -1,65 +1,39 @@
 import { Suspense } from "react";
-import nextDynamic from "next/dynamic";
 import { SiteNavbar } from "@/components/site-navbar";
 import { EveulHeroCarousel } from "@/components/hero/eveul-hero-carousel";
 import { FeaturedCollection } from "@/components/home/featured-collection";
 import { BestSellers } from "@/components/home/best-sellers";
+import { BestSellersSkeleton } from "@/components/home/best-sellers-client";
+import { OnTheWrist } from "@/components/home/on-the-wrist";
+import { CraftsmanshipStory } from "@/components/home/craftsmanship-story";
 import { FinalNewsletterCTA } from "@/components/home/final-newsletter-cta";
 import { SiteFooter } from "@/components/site-footer";
 import { getHeroCarouselSlides } from "@/lib/hero-carousel-data";
 
 export const dynamic = "force-dynamic";
 
-const CraftsmanshipStory = nextDynamic(
-  () =>
-    import("@/components/home/craftsmanship-story").then(
-      (mod) => mod.CraftsmanshipStory,
-    ),
-  {
-    loading: () => (
-      <section className="mobile-content-auto border-t border-border py-12 sm:py-16" />
-    ),
-  },
-);
-
-function BestSellersLoading() {
-  return (
-    <section
-      id="best-sellers"
-      className="mobile-content-auto relative overflow-hidden border-t border-border"
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/80" />
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-        <div className="h-3 w-32 rounded-full bg-[color:var(--gold)]/25" />
-        <div className="mt-5 h-10 w-full max-w-xl rounded-2xl bg-white/10" />
-        <div className="mt-4 h-4 w-full max-w-md rounded-full bg-white/10" />
-        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="aspect-[4/5] animate-pulse rounded-3xl border border-border bg-card/15"
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
+/*
+ * Ritmo da home (escuro → claro → escuro):
+ * Hero · Condições · Slogan + colecções · Mais vendidos · No pulso (claro)
+ * · Processo (vídeo) · Newsletter · Footer
+ */
 export default async function Home() {
   const heroSlides = await getHeroCarouselSlides();
 
   return (
-    <main className="relative">
+    <>
       <SiteNavbar />
-      <EveulHeroCarousel slides={heroSlides} />
-      <FeaturedCollection />
-      <Suspense fallback={<BestSellersLoading />}>
-        <BestSellers />
-      </Suspense>
-      <CraftsmanshipStory />
-      <FinalNewsletterCTA />
+      <main id="conteudo">
+        <EveulHeroCarousel slides={heroSlides} />
+        <FeaturedCollection />
+        <Suspense fallback={<BestSellersSkeleton />}>
+          <BestSellers />
+        </Suspense>
+        <OnTheWrist />
+        <CraftsmanshipStory />
+        <FinalNewsletterCTA />
+      </main>
       <SiteFooter />
-    </main>
+    </>
   );
 }

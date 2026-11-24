@@ -3,162 +3,268 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* =========================================================================
+   EVEUL · DESIGN SYSTEM (direcção "Noir" + faixas claras)
+   -------------------------------------------------------------------------
+   1. Primitivas da marca (:root)  — valores brutos, não usar directamente
+   2. Tokens semânticos (:root)     — o que os componentes consomem
+   3. Tom claro (.tone-light)       — redefine os semânticos dentro de uma
+                                      faixa clara; tudo o que está dentro
+                                      adapta-se sozinho
+   4. @theme                        — expõe tudo ao Tailwind
+   Contraste verificado (WCAG):
+     marfim/noite 15.7 · ouro/noite 8.3 · areia/noite 7.0 · tinta/ouro 8.0
+     ouro-tinta/pedra 5.0 · tinta-suave/pedra 5.9 · branco/whatsapp 5.4
+   Regra: o ouro (#C9A45C) NUNCA vai sobre fundo claro (≈2:1).
+   ========================================================================= */
+
+:root {
+  /* 1. Primitivas */
+  --eveul-night: #0d0c0a;
+  --eveul-charcoal: #17150f;
+  --eveul-smoke: #201d16;
+  --eveul-wire: #2a261e;
+  --eveul-wire-strong: #6b6354;
+  --eveul-ivory: #ede6d6;
+  --eveul-sand: #a39a88;
+  --eveul-gold: #c9a45c;
+  --eveul-gold-hover: #d6b36e;
+  --eveul-rose: #c98e74;
+  --eveul-stone: #eeebe5;
+  --eveul-paper: #f7f5f0;
+  --eveul-ink: #14120f;
+  --eveul-ink-soft: #5e584d;
+  --eveul-gold-ink: #7e5f26;
+  --eveul-line-light: #d6d0c4;
+  --eveul-whatsapp: #0b7a3e;
+  --eveul-whatsapp-hover: #096a35;
+
+  /* 2. Semânticos (tom escuro, o oficial) */
+  --background: var(--eveul-night);
+  --foreground: var(--eveul-ivory);
+  --card: var(--eveul-charcoal);
+  --card-foreground: var(--eveul-ivory);
+  --popover: var(--eveul-charcoal);
+  --popover-foreground: var(--eveul-ivory);
+  --primary: var(--eveul-gold);
+  --primary-hover: var(--eveul-gold-hover);
+  --primary-foreground: var(--eveul-ink);
+  --secondary: var(--eveul-smoke);
+  --secondary-foreground: var(--eveul-ivory);
+  --muted: var(--eveul-smoke);
+  --muted-foreground: var(--eveul-sand);
+  --accent: var(--eveul-smoke);
+  --accent-foreground: var(--eveul-ivory);
+  --destructive: #e5534b;
+  --border: var(--eveul-wire);
+  --input: var(--eveul-wire-strong);
+  --ring: var(--eveul-gold);
+
+  /* Marca */
+  --gold: var(--eveul-gold);
+  --rose: var(--eveul-rose);
+  --rule: var(--eveul-gold);
+  --whatsapp: var(--eveul-whatsapp);
+  --whatsapp-hover: var(--eveul-whatsapp-hover);
+  --surface-sunken: #0a0908; /* fundo atrás das fotos de produto */
+
+  --radius: 0.25rem;
+}
+
+/* 3. Faixa clara (lifestyle, comunidade, about). Usar via <Section tone="light"> */
+.tone-light {
+  --background: var(--eveul-stone);
+  --foreground: var(--eveul-ink);
+  --card: var(--eveul-paper);
+  --card-foreground: var(--eveul-ink);
+  --popover: var(--eveul-paper);
+  --popover-foreground: var(--eveul-ink);
+  --primary: var(--eveul-ink);
+  --primary-hover: #2b2721;
+  --primary-foreground: var(--eveul-stone);
+  --secondary: #e2ded5;
+  --secondary-foreground: var(--eveul-ink);
+  --muted: #e2ded5;
+  --muted-foreground: var(--eveul-ink-soft);
+  --accent: #e2ded5;
+  --accent-foreground: var(--eveul-ink);
+  --destructive: #b3261e;
+  --border: var(--eveul-line-light);
+  --input: #8c8473;
+  --ring: var(--eveul-gold-ink);
+
+  --gold: var(--eveul-gold-ink);
+  --rule: var(--eveul-gold-ink);
+  --surface-sunken: #e2ded5;
+
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* O site é dark-first: .dark (no <html>) mantém-se só para as variantes dark: do shadcn */
+
 @theme inline {
+  /* Cores */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
-
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-
   --color-destructive: var(--destructive);
-
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Eveul custom tokens */
   --color-gold: var(--gold);
-  --color-gold-foreground: var(--gold-foreground);
-  --color-gold-soft: var(--gold-soft);
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
+  --color-rose: var(--rose);
+  --color-rule: var(--rule);
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-hover: var(--whatsapp-hover);
+  --color-sunken: var(--surface-sunken);
+  --color-ink: var(--eveul-ink);
+  --color-ivory: var(--eveul-ivory);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  /* Tipografia (variáveis definidas pelo next/font em app/layout.tsx) */
+  --font-sans: var(--font-barlow), system-ui, "Segoe UI", Arial, sans-serif;
+  --font-display: var(--font-barlow-condensed), "Arial Narrow", system-ui, sans-serif;
+
+  /* Raios: quase rectos, como uma caixa de relógio.
+     Os 2xl–4xl antigos ficam iguais a xl para neutralizar o código legado. */
+  --radius-sm: 2px;
+  --radius-md: 3px;
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
-
-  --font-sans: var(--font-sans);
-  --font-display: var(--font-display);
+  --radius-xl: 6px;
+  --radius-2xl: 6px;
+  --radius-3xl: 6px;
+  --radius-4xl: 6px;
 }
 
-/* Base tokens (mantemos claro, mas o projecto deve correr em .dark por padrão) */
-:root {
-  --radius: 0.75rem;
-  --font-sans: "Manrope", "Segoe UI", Arial, sans-serif;
-  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+@theme {
+  /* Escala tipográfica fluida (mobile → desktop) */
+  --text-display: clamp(3rem, 1.9rem + 5.2vw, 6.5rem);
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: 0.005em;
+  --text-h1: clamp(2.25rem, 1.7rem + 2.6vw, 3.75rem);
+  --text-h1--line-height: 0.95;
+  --text-h2: clamp(1.75rem, 1.45rem + 1.4vw, 2.5rem);
+  --text-h2--line-height: 1;
+  --text-h2--letter-spacing: 0.01em;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.05;
+  --text-h3--letter-spacing: 0.02em;
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.6;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.35;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.14em;
 
-  /* Neutros */
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0.01 285);
+  --text-button: 0.9375rem;
+  --text-button--line-height: 1;
+  --tracking-button: 0.1em;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0.01 285);
+  /* Espaçamento e ritmo */
+  --spacing-section: clamp(4rem, 2.75rem + 5vw, 7.5rem);
+  --spacing-section-sm: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  --spacing-gutter: clamp(1.25rem, 0.75rem + 2vw, 3rem);
+  --spacing-touch: 2.75rem; /* 44px: alvo de toque mínimo */
+  --spacing-bar: 4.75rem;   /* altura da barra fixa de WhatsApp no mobile */
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0.01 285);
+  --container-site: 80rem;
+  --container-prose: 42rem;
 
-  /* Primário no modo claro: neutro escuro (não dourado) */
-  --primary: oklch(0.18 0.01 285);
-  --primary-foreground: oklch(0.985 0 0);
+  /* Sombras: quase não há. Só para elementos que flutuam. */
+  --shadow-bar: 0 -12px 32px -16px rgb(0 0 0 / 0.7);
+  --shadow-float: 0 20px 40px -24px rgb(0 0 0 / 0.8);
 
-  --secondary: oklch(0.965 0.005 285);
-  --secondary-foreground: oklch(0.18 0.01 285);
-
-  --muted: oklch(0.965 0.005 285);
-  --muted-foreground: oklch(0.55 0.02 285);
-
-  --accent: oklch(0.965 0.005 285);
-  --accent-foreground: oklch(0.18 0.01 285);
-
-  --destructive: oklch(0.577 0.245 27.325);
-
-  --border: oklch(0.92 0.01 285);
-  --input: oklch(0.92 0.01 285);
-  --ring: oklch(0.65 0.02 285);
-
-  /* Eveul gold (modo claro) */
-  --gold: oklch(0.82 0.08 85);          /* dourado principal */
-  --gold-soft: oklch(0.9 0.05 85);      /* dourado suave */
-  --gold-foreground: oklch(0.18 0.01 285);
-
-  /* Superfícies (modo claro) */
-  --surface-1: oklch(0.985 0 0);
-  --surface-2: oklch(0.97 0 0);
-}
-
-/* Eveul Dark (o “modo oficial” do site) */
-.dark {
-  --radius: 0.75rem;
-
-  /* Neutros premium (pretos com profundidade, não preto absoluto) */
-  --background: oklch(0.12 0.01 285);        /* ~ #0B0B0B */
-  --foreground: oklch(0.985 0 0);
-
-  --card: oklch(0.16 0.01 285);              /* ~ #121212 */
-  --card-foreground: oklch(0.985 0 0);
-
-  --popover: oklch(0.16 0.01 285);
-  --popover-foreground: oklch(0.985 0 0);
-
-  /* Primário = dourado (para CTA e estados activos) */
-  --primary: oklch(0.82 0.08 85);            /* dourado */
-  --primary-foreground: oklch(0.15 0.01 285);
-
-  --secondary: oklch(0.2 0.01 285);          /* superfícies */
-  --secondary-foreground: oklch(0.985 0 0);
-
-  --muted: oklch(0.2 0.01 285);
-  --muted-foreground: oklch(0.72 0.02 285);
-
-  --accent: oklch(0.2 0.01 285);
-  --accent-foreground: oklch(0.985 0 0);
-
-  --destructive: oklch(0.704 0.191 22.216);
-
-  /* Bordas subtis, muito finas */
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.82 0.08 85 / 40%);
-
-  /* Eveul gold tokens */
-  --gold: oklch(0.82 0.08 85);
-  --gold-soft: oklch(0.88 0.06 85);
-  --gold-foreground: oklch(0.15 0.01 285);
-
-  /* Superfícies (para overlays e seções) */
-  --surface-1: oklch(0.12 0.01 285);
-  --surface-2: oklch(0.16 0.01 285);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
-
-  /* Opcional: aparência premium de selecção */
+  body {
+    @apply bg-background text-foreground font-sans text-body;
+    font-feature-settings: "kern", "liga";
+  }
+  h1, h2, h3, h4 {
+    @apply font-display font-semibold uppercase;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
   ::selection {
-    background: color-mix(in oklch, var(--gold) 30%, transparent);
+    background: color-mix(in oklch, var(--eveul-gold) 35%, transparent);
+  }
+}
+
+@layer components {
+  /* Linha dourada de assinatura: substitui os eyebrows */
+  .rule-top {
+    position: relative;
+    padding-top: 1.25rem;
+  }
+  .rule-top::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3rem;
+    height: 2px;
+    background: var(--rule);
+  }
+  .rule-top-center::before {
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 
 @layer utilities {
+  /* Admin: funcional, sem tipografia de marca. Fica nas utilities para
+     vencer font-display/uppercase dos botões e badges partilhados. */
+  .admin-ui :is(h1, h2, h3, h4) {
+    font-family: var(--font-sans);
+    text-transform: none;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+  .admin-ui :is([data-slot="button"], [data-slot="badge"]) {
+    font-family: var(--font-sans);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .admin-ui [data-slot="button"] {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
   @media (max-width: 767px) {
     .mobile-content-auto {
       content-visibility: auto;

@@ -1,18 +1,24 @@
 // components/watches/watch-product-page.tsx
-"use client";
-
-import Image from "next/image";
+// Componente de servidor: só a galeria e a barra fixa correm no cliente.
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+
+import { formatKz, siteConfig } from "@/lib/site-config";
 import { getPrimaryImage } from "@/lib/products";
-import { buildProductWhatsAppLink, siteConfig } from "@/lib/site-config";
+import { Button } from "@/components/ui/button";
+import { Section } from "@/components/brand/section";
+import { SectionHeader } from "@/components/brand/section-header";
+import { ProductCard } from "@/components/brand/product-card";
+import { ProductBadge, type ProductBadgeValue } from "@/components/brand/product-badge";
+import { WhatsAppButton } from "@/components/brand/whatsapp-button";
+import { EveulMark } from "@/components/brand/icons";
+import { ProductGallery } from "@/components/watches/product-gallery";
+import { ProductBuyBar } from "@/components/watches/product-buy-bar";
 
 type Spec = { k: string; v: string };
 
 export type WatchProduct = {
   id: string;
-  slug: string; // ✅ novo
+  slug: string;
   name: string;
   collection: string;
   price: number;
@@ -25,8 +31,16 @@ export type WatchProduct = {
   stockLabel?: string;
 };
 
-function formatKz(value: number) {
-  return new Intl.NumberFormat("pt-PT").format(value);
+const BUY_CTA_ID = "comprar";
+
+const reassurance = [
+  { k: "Entrega", v: "Luanda, 24 a 72 horas" },
+  { k: "Garantia", v: "12 meses" },
+  { k: "Pagamento", v: "AppyPay, referência ou TPA" },
+];
+
+function asBadge(value?: string): ProductBadgeValue | undefined {
+  return value === "BEST SELLER" || value === "LIMITED" || value === "NEW" ? value : undefined;
 }
 
 export function WatchProductPage({
@@ -36,313 +50,125 @@ export function WatchProductPage({
   product: WatchProduct;
   related: WatchProduct[];
 }) {
-  const [active, setActive] = useState(0);
-
-  const galleryImages = useMemo(
-    () =>
-      product.images?.length
-        ? product.images
-        : [siteConfig.fallbackProductImage],
-    [product.images],
-  );
-
-  const mainImage = galleryImages[Math.min(active, galleryImages.length - 1)];
+  const images = product.images?.length ? product.images : [siteConfig.fallbackProductImage];
+  const badge = asBadge(product.badge);
+  // Garantia e envio já aparecem no bloco de confiança; não repetir nas especificações.
+  const specs = product.specs.filter((s) => !["Garantia", "Envio"].includes(s.k));
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[color:var(--gold)]/8 blur-[150px]" />
-        <div className="absolute -right-56 top-10 h-[620px] w-[620px] rounded-full bg-white/5 blur-[160px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/55 to-black/90" />
-      </div>
+    <>
+      <Section spacing="none" className="pb-section pt-4 lg:pt-10">
+        {/* Caminho */}
+        <nav aria-label="Caminho" className="mb-4 hidden text-meta text-muted-foreground lg:block">
+          <ol className="flex items-center gap-2">
+            <li><Link href="/" className="hover:text-foreground">Início</Link></li>
+            <li aria-hidden="true">/</li>
+            <li><Link href="/watches" className="hover:text-foreground">Relógios</Link></li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" className="text-foreground">{product.name}</li>
+          </ol>
+        </nav>
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        {/* Breadcrumb */}
-        <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">
-            INÍCIO
-          </Link>{" "}
-          <span className="mx-2">/</span>
-          <Link href="/watches" className="hover:text-foreground">
-            RELÓGIOS
-          </Link>{" "}
-          <span className="mx-2">/</span>
-          <span className="text-foreground">{product.name.toUpperCase()}</span>
-        </div>
-
-        {/* Top */}
-        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start">
-          {/* Gallery */}
+        <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
-            <div className="rounded-4xl border border-border bg-card/15 p-4 backdrop-blur">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl">
-                <Image
-                  src={mainImage}
-                  alt={product.name}
-                  fill
-                  sizes="(min-width: 1024px) 58vw, 100vw"
-                  className="object-cover"
-                  unoptimized
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/60" />
-
-                {product.badge && (
-                  <div className="absolute left-4 top-4 rounded-full border border-border bg-black/30 px-3 py-1 text-[10px] tracking-[0.22em] text-[color:var(--gold)] backdrop-blur">
-                    {product.badge}
-                  </div>
-                )}
-              </div>
-
-              {/* Thumbs */}
-              <div className="mt-4 grid grid-cols-4 gap-3">
-                {galleryImages.slice(0, 4).map((src, i) => (
-                  <button
-                    key={src + i}
-                    type="button"
-                    onClick={() => setActive(i)}
-                    className={[
-                      "relative aspect-square overflow-hidden rounded-2xl border backdrop-blur transition",
-                      i === active
-                        ? "border-[color:var(--gold)]/45 bg-[color:var(--gold)]/10"
-                        : "border-border bg-card/10 hover:bg-card/20",
-                    ].join(" ")}
-                    aria-label={`Ver imagem ${i + 1}`}
-                  >
-                    <Image
-                      src={src}
-                      alt={`${product.name} ${i + 1}`}
-                      fill
-                      sizes="(min-width: 1024px) 160px, 25vw"
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-black/10" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Highlights */}
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {product.highlights.slice(0, 3).map((h) => (
-                <MiniStat key={h} title={h} value="Premium" />
-              ))}
-            </div>
+            <ProductGallery
+              images={images}
+              name={product.name}
+              badge={<ProductBadge badge={badge} />}
+            />
           </div>
 
-          {/* Details */}
           <div className="lg:col-span-5">
-            <div className="rounded-4xl border border-border bg-card/15 p-8 backdrop-blur">
-              <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-                {product.collection.toUpperCase()}
-              </div>
+            <div className="lg:sticky lg:top-24">
+              <p className="text-meta text-muted-foreground">Colecção {product.collection}</p>
+              <h1 className="mt-2 text-h1">{product.name}</h1>
 
-              <h1 className="mt-4 font-[var(--font-display)] text-4xl leading-[1.05] tracking-tight md:text-5xl">
-                {product.name}
-              </h1>
-
-              <p className="mt-5 text-sm leading-7 text-muted-foreground">
-                {product.description}
+              <p className="tabular mt-4 font-display text-[2rem] font-semibold leading-none tracking-wide text-gold">
+                {formatKz(product.price)}
               </p>
 
-              {/* Price */}
-              <div className="mt-7 flex items-end justify-between gap-4">
-                <div>
-                  <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                    PREÇO
-                  </div>
-                  <div className="mt-2 font-[var(--font-display)] text-3xl tracking-tight">
-                    <span className="text-[color:var(--gold)]">
-                      {product.currency ?? "Kz"}
-                    </span>{" "}
-                    {formatKz(product.price)}
-                  </div>
-                </div>
+              {product.description ? (
+                <p className="mt-6 text-lead text-muted-foreground">{product.description}</p>
+              ) : null}
 
-                <div className="rounded-full border border-border bg-black/20 px-4 py-2 text-[11px] tracking-[0.22em] text-muted-foreground backdrop-blur">
-                  {product.stockLabel ?? "DISPONÍVEL"}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  className="h-12 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90"
-                >
-                  <a
-                    href={buildProductWhatsAppLink(product.name)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Reservar no WhatsApp
-                  </a>
-                </Button>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-12 rounded-full border-border bg-black/20 px-6 backdrop-blur hover:bg-black/35"
-                >
-                  <a
-                    href={buildProductWhatsAppLink(product.name)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Falar no WhatsApp
-                  </a>
-                </Button>
-              </div>
-
-              {/* Trust line */}
-              <div className="mt-8 text-[11px] tracking-[0.22em] text-muted-foreground">
-                ENVIO 24–72H (LUANDA) • GARANTIA 12 MESES • PAGAMENTO APPYPAY
-              </div>
-
-              {/* Specs */}
-              <div className="mt-8 border-t border-border pt-6">
-                <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                  ESPECIFICAÇÕES
-                </div>
-
-                <dl className="mt-4 grid grid-cols-1 gap-3">
-                  {product.specs.map((s) => (
-                    <div
-                      key={s.k}
-                      className="flex items-center justify-between rounded-2xl border border-border bg-black/15 px-4 py-3"
-                    >
-                      <dt className="text-xs tracking-[0.14em] text-muted-foreground">
-                        {s.k.toUpperCase()}
-                      </dt>
-                      <dd className="text-xs tracking-[0.14em] text-foreground">
-                        {s.v}
-                      </dd>
-                    </div>
+              {product.highlights.length > 0 ? (
+                <ul className="mt-6 space-y-2.5">
+                  {product.highlights.map((h) => (
+                    <li key={h} className="flex items-center gap-3">
+                      <EveulMark className="h-2.5 w-3 shrink-0 text-gold" strokeWidth={10} />
+                      <span>{h}</span>
+                    </li>
                   ))}
-                </dl>
-              </div>
-            </div>
+                </ul>
+              ) : null}
 
-            {/* Shipping / warranty mini */}
-            <div className="mt-6 rounded-4xl border border-border bg-card/10 p-6 backdrop-blur">
-              <div className="text-[11px] tracking-[0.22em] text-[color:var(--gold)]">
-                ENVIO & GARANTIA
+              {/* CTA principal: a barra fixa do mobile esconde-se enquanto este bloco está visível */}
+              <div id={BUY_CTA_ID} className="mt-8 flex flex-col gap-3">
+                <WhatsAppButton productName={product.name} price={product.price} size="lg" className="w-full" />
+                <p className="text-center text-meta text-muted-foreground">
+                  Respondemos no WhatsApp com disponibilidade e formas de pagamento.
+                </p>
               </div>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                Envio rápido em Luanda e assistência no pós-venda. Em caso de
-                dúvida, fale connosco antes da compra para recomendação por
-                estilo e orçamento.
-              </p>
 
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <QuickLink href="/watches" label="Ver outros modelos" />
-                <QuickLink href="/about" label="Sobre a Eveul" />
-              </div>
+              <dl className="mt-8 border-t border-border">
+                {reassurance.map((r) => (
+                  <div key={r.k} className="flex justify-between gap-4 border-b border-border py-3.5">
+                    <dt className="text-muted-foreground">{r.k}</dt>
+                    <dd className="text-right">{r.v}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              {specs.length > 0 ? (
+                <section aria-labelledby="specs-titulo" className="mt-10">
+                  <h2 id="specs-titulo" className="rule-top text-h3">Especificações</h2>
+                  <dl className="mt-4 border-t border-border">
+                    {specs.map((s) => (
+                      <div key={s.k} className="flex justify-between gap-4 border-b border-border py-3.5">
+                        <dt className="text-muted-foreground">{s.k}</dt>
+                        <dd className="text-right">{s.v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              ) : null}
             </div>
           </div>
         </div>
+      </Section>
 
-        {/* Related */}
-        <div className="mt-14 border-t border-border pt-12">
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-                RECOMENDADOS
-              </div>
-              <h2 className="mt-4 font-[var(--font-display)] text-3xl tracking-tight">
-                Outros modelos da colecção.
-              </h2>
-            </div>
-
-            <Link
-              href="/watches"
-              className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
-            >
-              VER TODOS →
-            </Link>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {related.length > 0 ? (
+        <Section tone="raised" aria-labelledby="relacionados-titulo" className="mobile-content-auto border-t border-border">
+          <SectionHeader
+            id="relacionados-titulo"
+            title={`Mais da colecção ${product.collection}`}
+            action={
+              <Button asChild variant="ghost">
+                <Link href="/watches">Ver todos os modelos</Link>
+              </Button>
+            }
+          />
+          <ul className="-mx-gutter flex snap-x snap-mandatory gap-3 overflow-x-auto px-gutter pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
             {related.map((p) => (
-              <RelatedCard key={p.slug} p={p} />
+              <li key={p.slug} className="w-[72vw] shrink-0 snap-start sm:w-auto">
+                <ProductCard
+                  className="h-full bg-background"
+                  product={{
+                    slug: p.slug,
+                    name: p.name,
+                    price: p.price,
+                    collection: p.collection,
+                    badge: asBadge(p.badge),
+                    image: getPrimaryImage(p.images),
+                  }}
+                />
+              </li>
             ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+          </ul>
+        </Section>
+      ) : null}
 
-function MiniStat({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="rounded-3xl border border-border bg-card/10 p-5 backdrop-blur">
-      <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-        {title.toUpperCase()}
-      </div>
-      <div className="mt-2 text-sm text-foreground">{value}</div>
-    </div>
-  );
-}
-
-function QuickLink({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-full border border-border bg-card/10 px-4 py-2 text-[11px] tracking-[0.22em] text-muted-foreground backdrop-blur hover:bg-card/25 hover:text-foreground"
-    >
-      {label} →
-    </Link>
-  );
-}
-
-function RelatedCard({ p }: { p: WatchProduct }) {
-  const img = getPrimaryImage(p.images);
-
-  return (
-    <article className="group relative overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur">
-      {p.badge && (
-        <div className="absolute left-4 top-4 z-10 rounded-full border border-border bg-black/30 px-3 py-1 text-[10px] tracking-[0.22em] text-[color:var(--gold)] backdrop-blur">
-          {p.badge}
-        </div>
-      )}
-
-      <div className="relative aspect-[4/5] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/65" />
-        <Image
-          src={img}
-          alt={p.name}
-          fill
-          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition duration-700 group-hover:scale-[1.03]"
-          unoptimized
-        />
-      </div>
-
-      <div className="p-5">
-        <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-          {p.collection.toUpperCase()}
-        </div>
-        <h3 className="mt-2 font-[var(--font-display)] text-xl tracking-tight">
-          {p.name}
-        </h3>
-
-        <div className="mt-3 flex items-center justify-between">
-          <div className="text-sm text-foreground">
-            <span className="text-[color:var(--gold)]">
-              {p.currency ?? "Kz"}
-            </span>{" "}
-            {formatKz(p.price)}
-          </div>
-
-          <Link
-            href={`/watches/${p.slug}`}
-            className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
-          >
-            VER →
-          </Link>
-        </div>
-      </div>
-    </article>
+      <ProductBuyBar name={product.name} price={product.price} watchId={BUY_CTA_ID} />
+    </>
   );
 }

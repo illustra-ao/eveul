@@ -1,191 +1,91 @@
 // components/home/featured-collection.tsx
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
+
+import { siteConfig } from "@/lib/site-config";
+import { Section } from "@/components/brand/section";
+
+const trust = [
+  { title: "Entrega em Luanda", text: "24 a 72 horas após confirmação" },
+  { title: "Garantia de 12 meses", text: "Assistência local no pós-venda" },
+  { title: "Encomenda simples", text: "Pelo WhatsApp, com AppyPay, referência ou TPA" },
+];
+
+// Imagens provisórias: substituir por fotografia real de cada colecção.
+const collections = [
+  {
+    name: "Signature",
+    text: "A assinatura da casa. Mecanismo à vista, presença no pulso.",
+    image: "/images/feature-2.webp",
+  },
+  {
+    name: "Limited",
+    text: "Edições curtas. Quando esgotam, não voltam.",
+    image: "/images/feature-1.webp",
+  },
+  {
+    name: "Classic",
+    text: "Linhas simples para todos os dias e para oferecer.",
+    image: "/images/feature-3.webp",
+  },
+];
 
 export function FeaturedCollection() {
   return (
-    <section className="mobile-content-auto relative border-t border-border">
-      {/* background subtle */}
-      <div className="absolute inset-0">
-        <div className="hidden absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[color:var(--gold)]/6 blur-[140px] md:block" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/40 to-black/70" />
-      </div>
+    <>
+      {/* Faixa de confiança: logo abaixo do hero, responde às dúvidas de compra */}
+      <section aria-label="Condições" className="border-y border-border bg-card">
+        <ul className="mx-auto grid w-full max-w-site divide-y divide-border px-gutter sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {trust.map((item) => (
+            <li key={item.title} className="py-5 sm:px-6 sm:first:pl-0">
+              <p className="font-display text-base font-semibold uppercase tracking-wide">{item.title}</p>
+              <p className="mt-1 text-meta text-muted-foreground">{item.text}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
-        {/* Header row */}
-        <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
-          <div className="max-w-xl">
-            <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-              FEATURED COLLECTION
-            </div>
-            <h2 className="mt-4 font-[var(--font-display)] text-3xl leading-[1.05] tracking-tight sm:text-4xl md:text-5xl">
-              Relógios desenhados para marcar presença, não apenas horas.
-            </h2>
-            <p className="mt-5 text-sm leading-7 text-muted-foreground">
-              Materiais premium, acabamentos de precisão e uma estética que
-              valoriza o detalhe. Explore as peças em destaque e descubra a
-              colecção Eveul.
-            </p>
+      <Section aria-labelledby="colecoes-titulo" className="mobile-content-auto">
+        <div className="grid gap-8 md:grid-cols-12 md:items-end">
+          <h2 id="colecoes-titulo" className="rule-top text-display md:col-span-8">
+            {siteConfig.slogan}.
+          </h2>
+          <p className="text-lead text-muted-foreground md:col-span-4">
+            Relógios desenhados em Angola para quem marca o próprio tempo. Três
+            colecções, poucas peças de cada.
+          </p>
+        </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button
-                asChild
-                className="h-11 w-full rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90 sm:w-auto"
-              >
-                <Link href="/watches">Ver Colecção</Link>
-              </Button>
-
+        <ul className="-mx-gutter mt-12 flex snap-x snap-mandatory gap-3 overflow-x-auto px-gutter pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0 md:pb-0">
+          {collections.map((c) => (
+            <li key={c.name} className="w-[78vw] shrink-0 snap-start md:w-auto">
               <Link
-                href="/about"
-                className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground"
+                href={`/watches?colecao=${c.name.toLowerCase()}`}
+                className="group relative block aspect-[3/4] overflow-hidden bg-sunken"
               >
-                EXPLORE DETAILS →
+                <Image
+                  src={c.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 33vw, 78vw"
+                  quality={70}
+                  className="object-cover transition-transform duration-700 ease-out-soft motion-safe:group-hover:scale-[1.03]"
+                />
+                {/* gradiente só onde está o texto */}
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
+                  <div className="flex items-end justify-between gap-4">
+                    <h3 className="text-h2 text-ivory">{c.name}</h3>
+                    <ArrowUpRight className="mb-1 size-6 text-gold transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                  </div>
+                  <p className="mt-2 max-w-xs text-meta text-ivory/80">{c.text}</p>
+                </div>
               </Link>
-            </div>
-          </div>
-
-          {/* Mini “stats” (opcional, mas fica bem neste estilo) */}
-          <div className="grid w-full max-w-md grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-card/40 p-4 md:backdrop-blur">
-              <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                MATERIAL
-              </div>
-              <div className="mt-2 text-sm text-foreground">Aço / Titânio</div>
-            </div>
-            <div className="rounded-2xl border border-border bg-card/40 p-4 md:backdrop-blur">
-              <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                VIDRO
-              </div>
-              <div className="mt-2 text-sm text-foreground">Safira</div>
-            </div>
-            <div className="rounded-2xl border border-border bg-card/40 p-4 md:backdrop-blur">
-              <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                EDIÇÃO
-              </div>
-              <div className="mt-2 text-sm text-foreground">Limitada</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Cards grid */}
-        <div className="mt-10 grid grid-cols-1 gap-5 md:mt-14 md:grid-cols-12 md:gap-6">
-          {/* Large card */}
-          <article className="group relative overflow-hidden rounded-3xl border border-border bg-card/30 md:col-span-7 md:backdrop-blur">
-            <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/30 to-black/0" />
-            <div className="relative p-6 md:p-10">
-              <div className="text-xs tracking-[0.22em] text-muted-foreground">
-                EVEUL SIGNATURE
-              </div>
-              <h3 className="mt-3 font-[var(--font-display)] text-3xl tracking-tight md:text-4xl">
-                Engenharia visível. Elegância silenciosa.
-              </h3>
-              <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
-                Uma assinatura estética que privilegia mecanismos e textura.
-                Pensado para quem aprecia o detalhe e a presença.
-              </p>
-
-              <div className="mt-7">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-11 rounded-full border-border bg-card/20 px-6 backdrop-blur hover:bg-card/40"
-                >
-                  <Link href="/watches/eveul-goldline">Ver Modelo</Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Image */}
-            <div className="relative h-[220px] w-full sm:h-[280px] md:h-[360px]">
-              <Image
-                src="/images/feature-2.webp"
-                alt="Featured watch macro"
-                fill
-                sizes="(min-width: 768px) 58vw, 100vw"
-                quality={72}
-                className="object-cover transition duration-700 group-hover:scale-[1.02]"
-              />
-            </div>
-          </article>
-
-          {/* Right column cards */}
-          <div className="grid grid-cols-1 gap-6 md:col-span-5">
-            <article className="group relative overflow-hidden rounded-3xl border border-border bg-card/30 md:backdrop-blur">
-              <div className="relative p-6 md:p-8">
-                <div className="text-[11px] tracking-[0.22em] text-[color:var(--gold)]">
-                  CRAFTSMANSHIP
-                </div>
-                <h4 className="mt-3 font-[var(--font-display)] text-2xl tracking-tight">
-                  Acabamento, textura e precisão.
-                </h4>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  Materiais seleccionados e montagem cuidada para uma
-                  experiência premium.
-                </p>
-              </div>
-
-              <div className="relative h-[180px] md:h-[220px]">
-                <Image
-                  src="/images/eveul3.png"
-                  alt="Craftsmanship"
-                  fill
-                  sizes="(min-width: 768px) 42vw, 100vw"
-                  quality={72}
-                  className="object-cover transition duration-700 group-hover:scale-[1.03]"
-                />
-              </div>
-            </article>
-
-            <article className="group relative overflow-hidden rounded-3xl border border-border bg-card/30 md:backdrop-blur">
-              <div className="relative p-6 md:p-8">
-                <div className="text-[11px] tracking-[0.22em] text-[color:var(--gold)]">
-                  LIMITED EDITION
-                </div>
-                <h4 className="mt-3 font-[var(--font-display)] text-2xl tracking-tight">
-                  Peças limitadas, impacto garantido.
-                </h4>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  Produção reduzida para manter exclusividade e valor ao longo
-                  do tempo.
-                </p>
-              </div>
-
-              <div className="relative h-[180px] md:h-[220px]">
-                <Image
-                  src="/images/feature-1.webp"
-                  alt="Limited edition"
-                  fill
-                  sizes="(min-width: 768px) 42vw, 100vw"
-                  quality={72}
-                  className="object-cover transition duration-700 group-hover:scale-[1.03]"
-                />
-              </div>
-            </article>
-          </div>
-        </div>
-
-        {/* Bottom strip */}
-        <div className="mt-10 grid grid-cols-1 gap-3 rounded-3xl border border-border bg-card/20 p-5 md:mt-12 md:grid-cols-4 md:gap-4 md:p-6 md:backdrop-blur">
-          <Spec label="Movimento" value="Automático" />
-          <Spec label="Resistência" value="5 ATM" />
-          <Spec label="Correia" value="Couro / Aço" />
-          <Spec label="Garantia" value="12 meses" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Spec({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-border/40 bg-black/10 p-4">
-      <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-        {label.toUpperCase()}
-      </div>
-      <div className="mt-2 text-sm text-foreground">{value}</div>
-    </div>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </>
   );
 }

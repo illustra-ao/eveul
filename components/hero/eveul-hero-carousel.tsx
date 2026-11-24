@@ -4,42 +4,46 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { WhatsAppButton } from "@/components/brand/whatsapp-button";
 import {
   defaultHeroCarouselSlides,
   type HeroCarouselSlide,
 } from "@/lib/hero-carousel";
 
+/**
+ * Hero da home.
+ * Mobile: imagem em cima, texto em baixo, sem animação (só troca de slide).
+ * Desktop: texto à esquerda, relógio grande à direita; transição GSAP curta.
+ */
 export function EveulHeroCarousel({
   slides = defaultHeroCarouselSlides,
 }: {
   slides?: HeroCarouselSlide[];
 }) {
   const root = useRef<HTMLElement | null>(null);
-  const leftCol = useRef<HTMLDivElement | null>(null);
+  const copy = useRef<HTMLDivElement | null>(null);
   const watchWrap = useRef<HTMLDivElement | null>(null);
-  const rightCol = useRef<HTMLDivElement | null>(null);
   const touchStartX = useRef<number | null>(null);
 
   const [index, setIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const current = slides[index] ?? defaultHeroCarouselSlides[0];
+  const hasMany = slides.length > 1;
+
   const canAnimate = () =>
-    typeof window === "undefined" ||
-    (!window.matchMedia("(max-width: 767px)").matches &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    typeof window !== "undefined" &&
+    !window.matchMedia("(max-width: 767px)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const go = (dir: 1 | -1) => {
-    if (isAnimating || slides.length <= 1) return;
-    const nextIndex = (index + dir + slides.length) % slides.length;
-    animateTo(nextIndex, dir);
-  };
+  const goTo = (nextIndex: number, dir: 1 | -1) => {
+    if (isAnimating || nextIndex === index) return;
 
-  const animateTo = (nextIndex: number, dir: 1 | -1) => {
-    if (!root.current) return;
-
-    if (!canAnimate()) {
+    if (!root.current || !canAnimate()) {
       setIndex(nextIndex);
       return;
     }
@@ -52,49 +56,30 @@ export function EveulHeroCarousel({
         onComplete: () => setIsAnimating(false),
       });
 
-      tl.to(leftCol.current, { autoAlpha: 0, x: -12, duration: 0.32 }, 0);
-      tl.to(
-        watchWrap.current,
-        { autoAlpha: 0, x: dir * 22, duration: 0.32 },
-        0,
-      );
-      tl.to(rightCol.current, { autoAlpha: 0, x: 12, duration: 0.32 }, 0);
-
+      tl.to(copy.current, { autoAlpha: 0, y: 8, duration: 0.28 }, 0);
+      tl.to(watchWrap.current, { autoAlpha: 0, x: dir * 24, duration: 0.3 }, 0);
       tl.add(() => setIndex(nextIndex));
-
-      tl.set([leftCol.current, rightCol.current], { x: 0 });
-      tl.set(watchWrap.current, { x: -dir * 22 });
-
-      tl.to(leftCol.current, { autoAlpha: 1, x: 0, duration: 0.45 }, 0.05);
-      tl.to(watchWrap.current, { autoAlpha: 1, x: 0, duration: 0.55 }, 0.05);
-      tl.to(rightCol.current, { autoAlpha: 1, x: 0, duration: 0.45 }, 0.1);
+      tl.set(copy.current, { y: -8 });
+      tl.set(watchWrap.current, { x: -dir * 24 });
+      tl.to(copy.current, { autoAlpha: 1, y: 0, duration: 0.45 }, ">");
+      tl.to(watchWrap.current, { autoAlpha: 1, x: 0, duration: 0.55 }, "<");
     }, root);
 
     setTimeout(() => ctx.revert(), 1100);
   };
 
-  useLayoutEffect(() => {
-    if (!root.current) return;
+  const go = (dir: 1 | -1) => {
+    if (!hasMany) return;
+    goTo((index + dir + slides.length) % slides.length, dir);
+  };
 
-    if (!canAnimate()) return;
+  // Entrada inicial (só desktop, sem reduced-motion).
+  // Só a imagem entra com fade: o título é o LCP e nunca começa escondido.
+  useLayoutEffect(() => {
+    if (!root.current || !canAnimate()) return;
 
     const ctx = gsap.context(() => {
-      gsap.set([leftCol.current, rightCol.current], { autoAlpha: 0, y: 12 });
-      gsap.set(watchWrap.current, { autoAlpha: 0, scale: 0.985, y: 18 });
-
-      gsap
-        .timeline({ defaults: { ease: "power3.out" } })
-        .to([leftCol.current, rightCol.current], {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.75,
-          stagger: 0.08,
-        })
-        .to(
-          watchWrap.current,
-          { autoAlpha: 1, scale: 1, y: 0, duration: 0.9 },
-          0.1,
-        );
+      gsap.from(watchWrap.current, { autoAlpha: 0, y: 16, duration: 0.9, ease: "power3.out" });
     }, root);
 
     return () => ctx.revert();
@@ -106,11 +91,9 @@ export function EveulHeroCarousel({
 
   const handleTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
     if (touchStartX.current === null) return;
-
     const endX = event.changedTouches[0]?.clientX ?? touchStartX.current;
     const distance = endX - touchStartX.current;
     touchStartX.current = null;
-
     if (Math.abs(distance) < 44) return;
     go(distance < 0 ? 1 : -1);
   };
@@ -120,150 +103,104 @@ export function EveulHeroCarousel({
       ref={root}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative min-h-[100svh] overflow-hidden md:min-h-[92vh]"
+      aria-roledescription="carrossel"
+      aria-label="Modelos em destaque"
+      className="relative bg-background pt-16"
     >
-      {/* Background */}
-      <div className="absolute inset-0 bg-background" />
-      <div className="absolute inset-0">
-        <div className="absolute -left-24 -top-24 h-[300px] w-[300px] rounded-full bg-[color:var(--gold)]/8 blur-[90px] md:-left-40 md:-top-40 md:h-[520px] md:w-[520px] md:bg-[color:var(--gold)]/10 md:blur-[120px]" />
-        <div className="hidden absolute -right-56 top-10 h-[620px] w-[620px] rounded-full bg-white/5 blur-[140px] md:block" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/80" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-7xl px-4 pb-8 pt-24 sm:px-6 sm:pb-12 sm:pt-28 lg:px-8">
-        <div className="grid grid-cols-12 gap-5 md:gap-8">
-          {/* Left */}
-          <div
-            ref={leftCol}
-            className="col-span-12 flex flex-col justify-center md:col-span-4"
-          >
-            <div className="mb-5 inline-flex w-fit items-center rounded-full border border-border bg-card/35 px-3 py-2 text-[10px] tracking-[0.18em] text-muted-foreground md:px-4 md:text-[11px] md:tracking-[0.22em] md:backdrop-blur">
-              {current.badge}
+      <div className="mx-auto grid w-full max-w-site md:min-h-[min(calc(88svh-4rem),52rem)] md:grid-cols-12 md:px-gutter">
+        {/* Relógio */}
+        <div className="relative md:order-2 md:col-span-7">
+          <div className="relative aspect-[5/4] w-full overflow-hidden bg-sunken md:absolute md:inset-0 md:aspect-auto md:my-8">
+            <div ref={watchWrap} className="absolute inset-6 md:inset-12">
+              <Image
+                key={current.image}
+                src={current.image}
+                alt={current.titleLines.join(" ")}
+                fill
+                priority={index === 0}
+                sizes="(min-width: 768px) 55vw, 100vw"
+                quality={78}
+                className="object-contain"
+              />
             </div>
 
-            <div className="text-xs tracking-[0.22em] text-muted-foreground">
-              {current.code}
-            </div>
+            {/* Etiqueta da colecção, canto inferior */}
+            {current.collection ? (
+              <p className="absolute bottom-4 right-4 text-meta text-muted-foreground">
+                Colecção {current.collection}
+              </p>
+            ) : null}
+          </div>
+        </div>
 
-            <h1 className="mt-4 font-[var(--font-display)] text-4xl leading-[0.95] tracking-tight sm:text-5xl md:text-6xl">
-              {current.titleLines.map((l) => (
-                <span key={l} className="block">
-                  {l}
+        {/* Texto */}
+        <div className="flex flex-col justify-end px-gutter pb-10 pt-8 md:order-1 md:col-span-5 md:px-0 md:py-16 md:pr-10">
+          <div ref={copy} aria-live="polite">
+            <p className="text-meta font-medium text-gold">{current.badge}</p>
+
+            <h1 className="mt-4 text-display">
+              {current.titleLines.map((line) => (
+                <span key={line} className="block">
+                  {line}
                 </span>
               ))}
             </h1>
 
-            <div className="mt-5 text-sm leading-7 text-muted-foreground md:mt-6">
-              {current.specs ?? "Open Gear • Caixa premium • Vidro de safira"}
-            </div>
-
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center md:mt-8">
-              <Button
-                asChild
-                className="h-11 w-full rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90 sm:w-auto"
-              >
-                <Link href={current.href}>Ver detalhes</Link>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-11 w-full rounded-full border-border bg-card/20 px-6 hover:bg-card/35 sm:w-auto md:backdrop-blur"
-                onClick={() => go(1)}
-                disabled={isAnimating}
-              >
-                Próximo modelo
-              </Button>
-
-              <div className="hidden items-center gap-2 md:flex">
-                <button
-                  onClick={() => go(-1)}
-                  disabled={isAnimating}
-                  className="h-11 w-11 rounded-full border border-border bg-card/35 text-sm backdrop-blur hover:bg-card/55 disabled:opacity-50"
-                  aria-label="Anterior"
-                >
-                  ←
-                </button>
-                <button
-                  onClick={() => go(1)}
-                  disabled={isAnimating}
-                  className="h-11 w-11 rounded-full border border-border bg-card/35 text-sm backdrop-blur hover:bg-card/55 disabled:opacity-50"
-                  aria-label="Seguinte"
-                >
-                  →
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-7 text-[10px] leading-5 tracking-[0.18em] text-muted-foreground md:mt-10 md:text-[11px] md:tracking-[0.22em]">
-              ENVIO 24–72H (LUANDA) • GARANTIA 12 MESES • PAGAMENTO APPYPAY
-            </div>
+            {current.specs ? (
+              <p className="mt-5 max-w-sm text-muted-foreground">{current.specs}</p>
+            ) : null}
           </div>
 
-          {/* Watch */}
-          <div className="relative col-span-12 flex items-center justify-center md:col-span-6">
-            <div
-              ref={watchWrap}
-              className="relative h-[72vw] min-h-[230px] w-[72vw] min-w-[230px] max-h-[320px] max-w-[320px] sm:h-[420px] sm:w-[420px] sm:max-h-none sm:max-w-none md:h-[560px] md:w-[560px]"
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href={current.href}>Ver o modelo</Link>
+            </Button>
+            <WhatsAppButton
+              productName={current.titleLines.join(" ")}
+              size="lg"
+              className="w-full sm:w-auto"
             >
-              <div className="absolute inset-0 rounded-full bg-[color:var(--gold)]/8 blur-[64px] md:bg-[color:var(--gold)]/10 md:blur-[84px]" />
-              <Image
-                src={current.image}
-                alt={`Eveul ${current.id}`}
-                fill
-                sizes="(min-width: 768px) 560px, (min-width: 640px) 420px, 72vw"
-                quality={76}
-                className="object-contain drop-shadow-2xl"
-                priority
-              />
-            </div>
+              Encomendar
+            </WhatsAppButton>
           </div>
 
-          {/* Right (discreto) */}
-          <div
-            ref={rightCol}
-            className="hidden flex-col justify-between md:col-span-2 md:flex md:items-end"
-          >
-            <div className="flex w-full flex-col items-start gap-3 md:items-end">
-              <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-                {current.availableLabel ?? "DISPONÍVEL"}
+          {hasMany ? (
+            <div className="mt-10 flex items-center gap-4">
+              <div className="flex">
+                <Button variant="outline" size="icon" onClick={() => go(-1)} disabled={isAnimating} aria-label="Modelo anterior">
+                  <ArrowLeft />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => go(1)} disabled={isAnimating} aria-label="Modelo seguinte" className="-ml-px">
+                  <ArrowRight />
+                </Button>
               </div>
 
-              <div className="w-full rounded-2xl border border-border bg-card/25 p-4 backdrop-blur md:max-w-[240px]">
-                <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                  COLECÇÃO
-                </div>
-                <div className="mt-2 text-sm text-foreground">
-                  {current.collection ?? "EVEUL"}
-                </div>
+              <ol className="flex items-center" aria-label="Escolher modelo">
+                {slides.map((s, i) => (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      onClick={() => goTo(i, i > index ? 1 : -1)}
+                      aria-label={`Modelo ${i + 1} de ${slides.length}`}
+                      aria-current={i === index ? "true" : undefined}
+                      className="flex h-11 items-center px-1"
+                    >
+                      <span
+                        className={cn(
+                          "block h-0.5 transition-all duration-300",
+                          i === index ? "w-12 bg-gold" : "w-6 bg-foreground/30",
+                        )}
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ol>
 
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--gold)]/70" />
-                  <span className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                    STOCK LIMITADO
-                  </span>
-                </div>
-              </div>
+              <p className="ml-auto text-meta tabular text-muted-foreground">
+                {String(index + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+              </p>
             </div>
-
-            <div className="mt-6 text-[11px] tracking-[0.22em] text-muted-foreground md:text-right">
-              {current.nextLabel ?? ""}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Indicador */}
-      <div className="pointer-events-none absolute bottom-6 left-0 right-0">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-center gap-2 px-4 sm:px-6 lg:px-8">
-          {slides.map((s, i) => (
-            <div
-              key={s.id}
-              className={[
-                "h-[2px] transition-all",
-                i === index ? "w-16 bg-[color:var(--gold)]" : "w-8 bg-white/25",
-              ].join(" ")}
-            />
-          ))}
+          ) : null}
         </div>
       </div>
     </section>

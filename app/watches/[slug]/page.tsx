@@ -45,7 +45,7 @@ function toWatchProduct(product: FallbackProduct) {
     description: product.description,
     highlights: product.highlights,
     specs: product.specs,
-    stockLabel: "Disponivel",
+    stockLabel: "Disponível",
   };
 }
 
@@ -54,13 +54,15 @@ function renderProductPage(
   related: Parameters<typeof WatchProductPage>[0]["related"],
 ) {
   return (
-    <main className="relative">
+    // pb: reserva espaço para a barra fixa de WhatsApp no mobile (inclui o footer)
+    <div className="pb-[calc(var(--spacing-bar)+env(safe-area-inset-bottom))] lg:pb-0">
       <SiteNavbar />
-      <div className="pt-24">
+      {/* pt-16: altura da navbar fixa */}
+      <main className="pt-16">
         <WatchProductPage product={product} related={related} />
-      </div>
+      </main>
       <SiteFooter />
-    </main>
+    </div>
   );
 }
 
@@ -153,7 +155,7 @@ export default async function WatchSlugPage({
         { k: "Garantia", v: "12 meses" },
         { k: "Envio", v: "Luanda 24-72h" },
       ],
-      stockLabel: "Disponivel",
+      stockLabel: "Disponível",
     };
 
     const vmRelated = (related ?? []).map((p) => ({

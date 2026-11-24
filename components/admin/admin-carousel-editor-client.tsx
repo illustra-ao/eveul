@@ -4,7 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { HeroCarouselSlide } from "@/lib/hero-carousel";
 
 type AdminCarouselSlide = HeroCarouselSlide & {
@@ -218,31 +220,30 @@ export function AdminCarouselEditorClient({
   };
 
   return (
-    <div className="mt-8">
-      {message && (
-        <div
-          className={[
-            "rounded-3xl border p-4 text-sm backdrop-blur",
-            message.kind === "ok"
-              ? "border-[color:var(--gold)]/30 bg-[color:var(--gold)]/10 text-foreground"
-              : "border-red-500/30 bg-red-500/10 text-foreground",
-          ].join(" ")}
-        >
-          {message.text}
-        </div>
-      )}
+    <div>
+      <div aria-live="polite">
+        {message ? (
+          <p
+            role={message.kind === "err" ? "alert" : "status"}
+            className={cn(
+              "mb-6 rounded-md border p-4 text-sm",
+              message.kind === "ok" ? "border-gold/40 bg-gold/10" : "border-destructive/50 bg-destructive/10",
+            )}
+          >
+            {message.text}
+          </p>
+        ) : null}
+      </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {slides.map((slide) => {
+      <ul className="grid gap-6 lg:grid-cols-2">
+        {slides.map((slide, index) => {
           const isBusy = busySlideId === slide.id || isPending;
           const title = slide.titleLines.join(" ");
+          const inputId = `slide-upload-${slide.id}`;
 
           return (
-            <article
-              key={slide.id}
-              className="overflow-hidden rounded-3xl border border-border bg-card/15 backdrop-blur"
-            >
-              <div className="relative aspect-[16/10] bg-black/25">
+            <li key={slide.id} className="overflow-hidden rounded-md border border-border bg-card">
+              <div className="relative aspect-[16/10] bg-sunken">
                 <Image
                   src={slide.image}
                   alt={title}
@@ -251,56 +252,55 @@ export function AdminCarouselEditorClient({
                   quality={76}
                   className="object-contain p-6"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/70" />
-                <div className="absolute left-5 top-5 rounded-full border border-border bg-black/35 px-3 py-1 text-[10px] tracking-[0.22em] text-[color:var(--gold)] backdrop-blur">
-                  {slide.id.toUpperCase()}
-                </div>
+                <span className="absolute left-3 top-3 rounded-sm bg-background/90 px-2 py-1 text-xs font-medium">
+                  Slide {index + 1}
+                </span>
               </div>
 
-              <div className="p-6">
-                <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
+              <div className="p-5">
+                <h2 className="text-lg">{title}</h2>
+                <p className="mt-0.5 text-meta text-muted-foreground">
                   {slide.code}
-                </div>
-                <h2 className="mt-2 font-[var(--font-display)] text-3xl tracking-tight">
-                  {title}
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  Esta imagem aparece no carrossel principal da home. Use
-                  PNG/WebP com fundo limpo para melhor recorte.
+                  {slide.updatedAt ? ` · actualizado em ${new Date(slide.updatedAt).toLocaleDateString("pt-PT")}` : ""}
+                </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Aparece no carrossel da página inicial. Prefere PNG ou WebP com fundo limpo.
                 </p>
 
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <label className="inline-flex cursor-pointer items-center">
-                    <input
-                      type="file"
-                      accept="image/avif,image/jpeg,image/png,image/webp"
-                      className="hidden"
-                      disabled={isBusy}
-                      onChange={(event) => {
-                        void upload(slide.id, event.currentTarget.files);
-                        event.currentTarget.value = "";
-                      }}
-                    />
-                    <span className="inline-flex h-11 items-center rounded-full bg-primary px-6 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90">
-                      {isBusy ? "A enviar..." : "Trocar imagem"}
-                    </span>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <input
+                    id={inputId}
+                    type="file"
+                    accept="image/avif,image/jpeg,image/png,image/webp"
+                    className="peer sr-only"
+                    disabled={isBusy}
+                    onChange={(event) => {
+                      void upload(slide.id, event.currentTarget.files);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                  <label
+                    htmlFor={inputId}
+                    className={cn(
+                      buttonVariants(),
+                      "cursor-pointer peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+                    )}
+                  >
+                    <Upload />
+                    {busySlideId === slide.id ? "A enviar…" : "Trocar imagem"}
                   </label>
 
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 rounded-full border-border bg-black/20 px-6 backdrop-blur hover:bg-black/35"
-                  >
+                  <Button asChild variant="outline">
                     <Link href={slide.href} target="_blank">
                       Ver produto
                     </Link>
                   </Button>
                 </div>
               </div>
-            </article>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }

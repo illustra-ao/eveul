@@ -5,8 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Star, Trash2, Upload } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatKz } from "@/lib/site-config";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Field, Panel, StatusBadge, selectClass, textareaClass } from "@/components/admin/admin-ui";
 
 type Collection = "Signature" | "Limited" | "Classic";
 type Status = "active" | "draft" | "archived";
@@ -53,10 +57,6 @@ const SOURCE_IMAGE_TYPES = new Set([
   "image/png",
   "image/webp",
 ]);
-
-function formatKz(value: number) {
-  return new Intl.NumberFormat("pt-PT").format(value);
-}
 
 function slugify(input: string) {
   return input
@@ -426,337 +426,221 @@ export function AdminProductEditorClient({
     }
   };
 
+  const publicSlug = slugify(form.slug || form.name);
+  const pricePreview = Number(String(form.price).replace(/[^\d]/g, "")) || 0;
+
+  const saveButton = (
+    <Button onClick={save} disabled={saving || isPending}>
+      {saving ? "A guardar…" : "Guardar alterações"}
+    </Button>
+  );
+
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <div className="pb-24 md:pb-0">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-            ADMIN
+          <Link href="/admin/products" className="text-meta text-muted-foreground hover:text-foreground">
+            ← Produtos
+          </Link>
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl md:text-3xl">{form.name || "Sem nome"}</h1>
+            <StatusBadge status={form.status} />
           </div>
-          <h1 className="mt-4 font-[var(--font-display)] text-4xl tracking-tight">
-            Editar produto
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            ID: <span className="text-foreground">{product.id}</span>
+          <p className="mt-1 text-meta text-muted-foreground">
+            /watches/{publicSlug} · <span className="tabular">{formatKz(pricePreview)}</span>
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/admin/products"
-            className="h-11 inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-6 text-xs tracking-[0.18em] text-foreground backdrop-blur hover:bg-card/20"
-          >
-            Voltar
-          </Link>
-          <Link
-            href="/admin/logout"
-            className="h-11 inline-flex items-center justify-center rounded-full border border-border bg-card/10 px-6 text-xs tracking-[0.18em] text-muted-foreground backdrop-blur hover:bg-card/20 hover:text-foreground"
-          >
-            Sair
-          </Link>
-          <Button
-            className="h-11 rounded-full bg-primary px-6 text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90"
-            onClick={save}
-            disabled={saving || isPending}
-          >
-            {saving ? "A guardar..." : "Guardar alterações"}
+        <div className="hidden flex-wrap gap-2 md:flex">
+          <Button asChild variant="outline">
+            <a href={`/watches/${product.slug}`} target="_blank" rel="noreferrer">Ver na loja</a>
           </Button>
+          {saveButton}
         </div>
       </div>
 
-      {message && (
-        <div
-          className={[
-            "mt-6 rounded-3xl border p-4 text-sm backdrop-blur",
-            message.kind === "ok"
-              ? "border-[color:var(--gold)]/30 bg-[color:var(--gold)]/10 text-foreground"
-              : "border-red-500/30 bg-red-500/10 text-foreground",
-          ].join(" ")}
-        >
-          {message.text}
-        </div>
-      )}
-
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left: Form */}
-        <div className="lg:col-span-7 rounded-4xl border border-border bg-card/15 p-8 backdrop-blur">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <Field label="Nome">
-              <Input
-                value={form.name}
-                onChange={(e) => setField("name", e.target.value)}
-                className="h-11 rounded-2xl bg-black/20"
-              />
-            </Field>
-
-            <Field label="Slug" hint="Usado na URL pública do produto.">
-              <Input
-                value={form.slug}
-                onChange={(e) => setField("slug", e.target.value)}
-                className="h-11 rounded-2xl bg-black/20"
-              />
-            </Field>
-
-            <Field label="Colecção">
-              <select
-                value={form.collection}
-                onChange={(e) => setField("collection", e.target.value)}
-                className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none"
-              >
-                <option value="Signature">Signature</option>
-                <option value="Limited">Limited</option>
-                <option value="Classic">Classic</option>
-              </select>
-            </Field>
-
-            <Field label="Badge">
-              <select
-                value={form.badge}
-                onChange={(e) => setField("badge", e.target.value)}
-                className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none"
-              >
-                <option value="">Sem badge</option>
-                <option value="BEST SELLER">BEST SELLER</option>
-                <option value="LIMITED">LIMITED</option>
-                <option value="NEW">NEW</option>
-              </select>
-            </Field>
-
-            <Field label="Preço (Kz)">
-              <Input
-                value={form.price}
-                onChange={(e) => setField("price", e.target.value)}
-                className="h-11 rounded-2xl bg-black/20"
-                inputMode="numeric"
-              />
-            </Field>
-
-            <Field label="Moeda">
-              <Input
-                value={form.currency}
-                onChange={(e) => setField("currency", e.target.value)}
-                className="h-11 rounded-2xl bg-black/20"
-              />
-            </Field>
-
-            <Field label="Estado">
-              <select
-                value={form.status}
-                onChange={(e) => setField("status", e.target.value)}
-                className="h-11 w-full rounded-2xl border border-border bg-black/20 px-4 text-sm text-foreground outline-none"
-              >
-                <option value="draft">draft</option>
-                <option value="active">active</option>
-                <option value="archived">archived</option>
-              </select>
-            </Field>
-
-            <Field label="Highlights" hint="Separados por vírgulas.">
-              <Input
-                value={form.highlights}
-                onChange={(e) => setField("highlights", e.target.value)}
-                className="h-11 rounded-2xl bg-black/20"
-              />
-            </Field>
-          </div>
-
-          <div className="mt-6">
-            <Field label="Descrição">
-              <textarea
-                value={form.description}
-                onChange={(e) => setField("description", e.target.value)}
-                rows={6}
-                className="w-full rounded-3xl border border-border bg-black/20 p-4 text-sm text-foreground outline-none"
-              />
-            </Field>
-          </div>
-
-          <div className="mt-8 rounded-3xl border border-border bg-black/15 p-5">
-            <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-              PREVIEW
-            </div>
-            <div className="mt-3 flex items-center justify-between gap-4">
-              <div>
-                <div className="text-sm text-foreground">{form.name}</div>
-                <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-                  /watches/{slugify(form.slug || form.name)}
-                </div>
-              </div>
-              <div className="text-sm text-foreground">
-                <span className="text-[color:var(--gold)]">
-                  {form.currency || "Kz"}
-                </span>{" "}
-                {formatKz(
-                  Number(String(form.price).replace(/[^\d]/g, "")) || 0,
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Images */}
-        <div className="lg:col-span-5">
-          <div className="rounded-4xl border border-border bg-card/15 p-8 backdrop-blur">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <div className="text-xs tracking-[0.22em] text-[color:var(--gold)]">
-                  IMAGENS
-                </div>
-                <div className="mt-2 text-sm text-muted-foreground">
-                  Upload para o bucket{" "}
-                  <span className="text-foreground">product-images</span>.
-                </div>
-              </div>
-
-              <label className="inline-flex cursor-pointer items-center justify-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => onUpload(e.target.files)}
-                  disabled={uploading}
-                />
-                <span className="h-11 rounded-full bg-primary px-6 inline-flex items-center text-xs tracking-[0.18em] text-primary-foreground hover:opacity-90">
-                  {uploading ? "A enviar..." : "Adicionar imagens"}
-                </span>
-              </label>
-            </div>
-
-            {uploadProgress && (
-              <div className="mt-5 rounded-3xl border border-border bg-black/15 p-4">
-                <div className="flex items-center justify-between gap-4 text-[11px] tracking-[0.18em] text-muted-foreground">
-                  <span>
-                    {uploadProgress.stage === "compressing"
-                      ? "A COMPRIMIR"
-                      : "A ENVIAR"}
-                  </span>
-                  <span>{uploadProgress.percent}%</span>
-                </div>
-                <div className="mt-2 truncate text-xs text-foreground">
-                  {uploadProgress.currentFile}
-                </div>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-[color:var(--gold)] transition-all"
-                    style={{ width: `${uploadProgress.percent}%` }}
-                  />
-                </div>
-              </div>
+      <div aria-live="polite">
+        {message ? (
+          <p
+            role={message.kind === "err" ? "alert" : "status"}
+            className={cn(
+              "mb-6 rounded-md border p-4 text-sm",
+              message.kind === "ok" ? "border-gold/40 bg-gold/10" : "border-destructive/50 bg-destructive/10",
             )}
-
-            {/* Main preview */}
-            <div className="mt-6 relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-border bg-black/25">
-              {mainImage ? (
-                <>
-                  <Image
-                    src={mainImage}
-                    alt="Principal"
-                    fill
-                    sizes="(min-width: 1024px) 420px, 100vw"
-                    className="object-cover"
-                    unoptimized
-                  />
-
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/10 to-black/60" />
-                  <div className="absolute left-4 top-4 rounded-full border border-border bg-black/30 px-3 py-1 text-[10px] tracking-[0.22em] text-[color:var(--gold)] backdrop-blur">
-                    PRINCIPAL
-                  </div>
-                </>
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
-                  Sem imagens ainda.
-                </div>
-              )}
-            </div>
-
-            {/* Thumbs list */}
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              {images.map((img, idx) => (
-                <div
-                  key={img.id}
-                  className="group relative overflow-hidden rounded-2xl border border-border bg-black/20"
-                >
-                  <div className="relative aspect-square w-full">
-                    <Image
-                      src={img.url}
-                      alt={`Imagem ${idx + 1}`}
-                      fill
-                      sizes="140px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-black/10" />
-                  </div>
-
-                  <div className="absolute inset-x-0 bottom-0 flex gap-2 p-2">
-                    <button
-                      type="button"
-                      onClick={() => makePrimary(img.id)}
-                      disabled={idx === 0}
-                      className="flex-1 rounded-full border border-border bg-black/35 px-2 py-1 text-[10px] tracking-[0.18em] text-foreground backdrop-blur hover:bg-black/55 disabled:opacity-50"
-                    >
-                      Principal
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => removeImage(img)}
-                      className="rounded-full border border-border bg-black/35 px-3 py-1 text-[10px] tracking-[0.18em] text-foreground backdrop-blur hover:bg-black/55"
-                    >
-                      Remover
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {images.length === 0 && (
-              <div className="mt-6 rounded-3xl border border-border bg-black/15 p-5 text-sm text-muted-foreground">
-                Faça upload de 2–4 imagens para começar. A primeira será
-                considerada principal.
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 rounded-4xl border border-border bg-card/10 p-6 backdrop-blur">
-            <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-              DICA
-            </div>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">
-              Para a página pública, use imagens em boa resolução e
-              enquadramento consistente. Depois adicionamos recorte e compressão
-              automática se precisares.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <div className="flex items-end justify-between gap-4">
-        <div className="text-[11px] tracking-[0.22em] text-muted-foreground">
-          {label.toUpperCase()}
-        </div>
-        {hint ? (
-          <div className="text-[11px] tracking-[0.18em] text-muted-foreground/80">
-            {hint}
-          </div>
+          >
+            {message.text}
+          </p>
         ) : null}
       </div>
-      <div className="mt-2">{children}</div>
-    </label>
+
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="space-y-6 lg:col-span-7">
+          <Panel title="Informação">
+            <div className="grid gap-5 md:grid-cols-2">
+              <Field label="Nome" htmlFor="name" className="md:col-span-2">
+                <Input id="name" value={form.name} onChange={(e) => setField("name", e.target.value)} />
+              </Field>
+
+              <Field label="Slug" hint="Usado no endereço público" htmlFor="slug">
+                <Input id="slug" value={form.slug} onChange={(e) => setField("slug", e.target.value)} />
+              </Field>
+
+              <Field label="Colecção" htmlFor="collection">
+                <select id="collection" value={form.collection} onChange={(e) => setField("collection", e.target.value)} className={selectClass}>
+                  <option value="Signature">Signature</option>
+                  <option value="Limited">Limited</option>
+                  <option value="Classic">Classic</option>
+                </select>
+              </Field>
+
+              <Field label="Descrição" htmlFor="description" className="md:col-span-2">
+                <textarea
+                  id="description"
+                  value={form.description}
+                  onChange={(e) => setField("description", e.target.value)}
+                  rows={6}
+                  className={textareaClass}
+                />
+              </Field>
+
+              <Field label="Destaques" hint="Separados por vírgulas" htmlFor="highlights" className="md:col-span-2">
+                <Input id="highlights" value={form.highlights} onChange={(e) => setField("highlights", e.target.value)} />
+              </Field>
+            </div>
+          </Panel>
+
+          <Panel title="Preço e publicação">
+            <div className="grid gap-5 md:grid-cols-2">
+              <Field label="Preço" hint="Só números" htmlFor="price">
+                <Input id="price" value={form.price} onChange={(e) => setField("price", e.target.value)} inputMode="numeric" />
+              </Field>
+
+              <Field label="Moeda" htmlFor="currency">
+                <Input id="currency" value={form.currency} onChange={(e) => setField("currency", e.target.value)} />
+              </Field>
+
+              <Field label="Badge" htmlFor="badge">
+                <select id="badge" value={form.badge} onChange={(e) => setField("badge", e.target.value)} className={selectClass}>
+                  <option value="">Sem badge</option>
+                  <option value="BEST SELLER">Best seller</option>
+                  <option value="LIMITED">Limited</option>
+                  <option value="NEW">New</option>
+                </select>
+              </Field>
+
+              <Field label="Estado" htmlFor="status">
+                <select id="status" value={form.status} onChange={(e) => setField("status", e.target.value)} className={selectClass}>
+                  <option value="draft">Rascunho</option>
+                  <option value="active">Publicado</option>
+                  <option value="archived">Arquivado</option>
+                </select>
+              </Field>
+            </div>
+          </Panel>
+        </div>
+
+        <div className="lg:col-span-5">
+          <Panel
+            title="Imagens"
+            description="A primeira é a principal (cards e partilhas). Até 6 por envio; são comprimidas antes do upload."
+            className="lg:sticky lg:top-6"
+          >
+            <input
+              id="product-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              className="peer sr-only"
+              onChange={(e) => onUpload(e.target.files)}
+              disabled={uploading}
+            />
+            <label
+              htmlFor="product-upload"
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "w-full cursor-pointer border-dashed peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+              )}
+            >
+              <Upload />
+              {uploading ? "A enviar…" : "Adicionar imagens"}
+            </label>
+
+            {uploadProgress ? (
+              <div className="mt-4" role="status">
+                <div className="flex justify-between gap-4 text-meta text-muted-foreground">
+                  <span className="truncate">
+                    {uploadProgress.stage === "compressing" ? "A comprimir" : "A enviar"} · {uploadProgress.currentFile}
+                  </span>
+                  <span className="tabular">{uploadProgress.percent}%</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div className="h-full bg-gold transition-all" style={{ width: `${uploadProgress.percent}%` }} />
+                </div>
+              </div>
+            ) : null}
+
+            {images.length === 0 ? (
+              <p className="mt-5 rounded-sm border border-border p-5 text-sm text-muted-foreground">
+                Sem imagens. Adiciona 2 a 4 fotografias com enquadramento consistente.
+              </p>
+            ) : (
+              <>
+                <div className="relative mt-5 aspect-square overflow-hidden rounded-sm bg-sunken">
+                  {mainImage ? (
+                    <Image src={mainImage} alt="Imagem principal" fill sizes="(min-width: 1024px) 420px, 100vw" className="object-cover" unoptimized />
+                  ) : null}
+                </div>
+
+                <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {images.map((img, idx) => (
+                    <li key={img.id} className="rounded-sm border border-border">
+                      <div className="relative aspect-square overflow-hidden bg-sunken">
+                        <Image src={img.url} alt={`Imagem ${idx + 1}`} fill sizes="140px" className="object-cover" unoptimized />
+                        {idx === 0 ? (
+                          <span className="absolute left-1.5 top-1.5 rounded-sm bg-gold px-1.5 py-0.5 text-xs font-medium text-ink">
+                            Principal
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex">
+                        <Button
+                          type="button"
+                          variant="link"
+                          size="sm"
+                          onClick={() => makePrimary(img.id)}
+                          disabled={idx === 0}
+                          className="flex-1 px-2"
+                          aria-label={`Tornar a imagem ${idx + 1} principal`}
+                        >
+                          <Star />
+                          <span className="sr-only sm:not-sr-only">Principal</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="link"
+                          size="icon"
+                          onClick={() => removeImage(img)}
+                          className="text-muted-foreground hover:text-destructive"
+                          aria-label={`Remover imagem ${idx + 1}`}
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </Panel>
+        </div>
+      </div>
+
+      {/* Mobile: guardar sempre à mão */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden">
+        <Button onClick={save} disabled={saving || isPending} className="w-full">
+          {saving ? "A guardar…" : "Guardar alterações"}
+        </Button>
+      </div>
+    </div>
   );
 }

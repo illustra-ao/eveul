@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
+
 type Status = "active" | "draft" | "archived";
 
 export function ProductRowActions({
@@ -34,41 +36,40 @@ export function ProductRowActions({
     startTransition(() => router.refresh());
   };
 
-  const publishLabel = status === "active" ? "DESPUBLICAR" : "PUBLICAR";
+  const isActive = status === "active";
 
   return (
-    <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-      <Link
-        href={`/admin/products/${id}`}
-        className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground px-2"
-      >
-        EDITAR →
-      </Link>
+    <div className="flex flex-wrap items-center gap-1 md:justify-end">
+      <Button asChild variant="outline" size="sm">
+        <Link href={`/admin/products/${id}`}>Editar</Link>
+      </Button>
 
-      <Link
-        href={`/watches/${slug}`}
-        className="text-xs tracking-[0.22em] text-muted-foreground hover:text-foreground px-2"
-      >
-        VER →
-      </Link>
-
-      <button
+      <Button
         type="button"
+        variant={isActive ? "outline" : "default"}
+        size="sm"
         disabled={isPending}
-        onClick={() => setStatus(status === "active" ? "draft" : "active")}
-        className="text-xs tracking-[0.22em] text-[color:var(--gold)] cursor-pointer hover:opacity-80 disabled:opacity-40 px-2"
+        onClick={() => setStatus(isActive ? "draft" : "active")}
       >
-        {isPending ? "..." : publishLabel}
-      </button>
+        {isPending ? "A guardar…" : isActive ? "Despublicar" : "Publicar"}
+      </Button>
 
-      <button
-        type="button"
-        disabled={isPending}
-        onClick={() => setStatus("archived")}
-        className="text-xs tracking-[0.22em] cursor-pointer text-muted-foreground hover:text-foreground disabled:opacity-40 px-2"
-      >
-        ARQUIVAR
-      </button>
+      <Button asChild variant="link" size="sm" className="px-2">
+        <Link href={`/watches/${slug}`} target="_blank">Ver</Link>
+      </Button>
+
+      {status !== "archived" ? (
+        <Button
+          type="button"
+          variant="link"
+          size="sm"
+          className="px-2 text-muted-foreground"
+          disabled={isPending}
+          onClick={() => setStatus("archived")}
+        >
+          Arquivar
+        </Button>
+      ) : null}
     </div>
   );
 }
