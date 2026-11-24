@@ -9,7 +9,8 @@ const columns = [
   {
     title: "Colecção",
     links: [
-      { href: "/watches", label: "Relógios" },
+      { href: "/watches?categoria=relogios", label: "Relógios" },
+      { href: "/watches?categoria=oculos", label: "Óculos" },
       { href: "/#mais-vendidos", label: "Mais vendidos" },
       { href: "/#atelier", label: "O processo" },
     ],

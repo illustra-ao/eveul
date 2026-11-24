@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { buildWhatsAppLink } from "@/lib/site-config";
 import { Section } from "@/components/brand/section";
 import { ProductCard } from "@/components/brand/product-card";
 import { WhatsAppButton } from "@/components/brand/whatsapp-button";
@@ -71,7 +72,11 @@ export function WatchesCatalogClient({
 
   // Só mostra o filtro de categoria quando já há óculos publicados
   const hasEyewear = useMemo(() => initialProducts.some((p) => p.category === "eyewear"), [initialProducts]);
-  const activeCategory: CategoryFilter = hasEyewear ? category : "all";
+  // O filtro pedido é sempre respeitado (ex.: link "Óculos" da navbar, mesmo sem óculos publicados)
+  const activeCategory: CategoryFilter = category;
+  // Chips de categoria: quando há óculos, ou quando o visitante já escolheu uma categoria
+  const showCategoryChips = hasEyewear || category !== "all";
+  const comingSoon = activeCategory === "eyewear" && !hasEyewear;
 
   const inCategory = useMemo(
     () => (activeCategory === "all" ? initialProducts : initialProducts.filter((p) => p.category === activeCategory)),
@@ -156,7 +161,7 @@ export function WatchesCatalogClient({
         </div>
 
         <div className="mt-8 space-y-2">
-          {hasEyewear ? (
+          {showCategoryChips ? (
             <div role="group" aria-label="Filtrar por categoria" className={rowClass}>
               {(["all", ...categories] as CategoryFilter[]).map((c) => {
                 const active = activeCategory === c;
@@ -170,23 +175,25 @@ export function WatchesCatalogClient({
             </div>
           ) : null}
 
-          <div role="group" aria-label="Filtrar por colecção" className={rowClass}>
-            {filters.map((f) => {
-              const active = filter === f;
-              return (
-                <button
-                  key={f}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => selectFilter(f)}
-                  className={chipClass(active)}
-                >
-                  {f === "Todos" && hasEyewear ? "Todas as colecções" : f}
-                  <Count n={collectionCounts.get(f) ?? 0} active={active} />
-                </button>
-              );
-            })}
-          </div>
+          {inCategory.length > 0 ? (
+            <div role="group" aria-label="Filtrar por colecção" className={rowClass}>
+              {filters.map((f) => {
+                const active = filter === f;
+                return (
+                  <button
+                    key={f}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => selectFilter(f)}
+                    className={chipClass(active)}
+                  >
+                    {f === "Todos" && showCategoryChips ? "Todas as colecções" : f}
+                    <Count n={collectionCounts.get(f) ?? 0} active={active} />
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </Section>
 
@@ -197,8 +204,10 @@ export function WatchesCatalogClient({
 
         {visible.length === 0 ? (
           <div className="border border-border px-6 py-12 text-center">
-            <p className="text-h3">Sem modelos aqui, por agora</p>
-            <p className="mt-2 text-muted-foreground">Pergunta-nos pelas próximas edições.</p>
+            <p className="text-h3">{comingSoon ? "Os óculos Eveul chegam em breve" : "Sem modelos aqui, por agora"}</p>
+            <p className="mt-2 text-muted-foreground">
+              {comingSoon ? "Fala connosco para saberes primeiro quando chegarem." : "Pergunta-nos pelas próximas edições."}
+            </p>
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <Button
                 variant="secondary"
@@ -210,7 +219,11 @@ export function WatchesCatalogClient({
               >
                 Ver todos
               </Button>
-              <WhatsAppButton>Perguntar no WhatsApp</WhatsAppButton>
+              <WhatsAppButton
+                href={comingSoon ? buildWhatsAppLink("Olá! Quando chegam os óculos Eveul? Gostava de ser avisado(a).") : undefined}
+              >
+                Perguntar no WhatsApp
+              </WhatsAppButton>
             </div>
           </div>
         ) : (
