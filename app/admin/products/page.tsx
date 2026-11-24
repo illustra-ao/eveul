@@ -6,6 +6,8 @@ import { SetupNotice, StatusBadge } from "@/components/admin/admin-ui";
 import { ProductRowActions } from "@/components/admin/product-row-actions";
 import { Button } from "@/components/ui/button";
 import { formatKz, siteConfig } from "@/lib/site-config";
+import { categoryLabels, parseAvailability, parseCategory } from "@/lib/products";
+import { ProductBadge } from "@/components/brand/product-badge";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +57,8 @@ export default async function AdminProductsPage() {
         price: number;
         currency: string;
         status: "active" | "draft" | "archived";
+        category?: string | null;
+        availability?: string | null;
         created_at: string;
         image?: string;
       }[]
@@ -63,7 +67,7 @@ export default async function AdminProductsPage() {
   try {
     const result = await supabaseAdmin
       .from("products")
-      .select("id,slug,name,collection,price,currency,status,created_at")
+      .select("id,slug,name,collection,price,currency,status,category,availability,created_at")
       .order("created_at", { ascending: false });
 
     if (result.error) throw new Error(result.error.message);
@@ -148,16 +152,21 @@ export default async function AdminProductsPage() {
                     </Link>
                     <p className="truncate text-meta text-muted-foreground">/{p.slug}</p>
                     <p className="mt-1 text-meta text-muted-foreground md:hidden">
-                      {p.collection} · <span className="tabular text-foreground">{formatKz(p.price)}</span>
+                      {categoryLabels[parseCategory(p.category)]} · {p.collection} ·{" "}
+                      <span className="tabular text-foreground">{formatKz(p.price)}</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="hidden text-sm md:col-span-2 md:block">{p.collection}</div>
+                <div className="hidden text-sm md:col-span-2 md:block">
+                  {p.collection}
+                  <span className="block text-meta text-muted-foreground">{categoryLabels[parseCategory(p.category)]}</span>
+                </div>
                 <div className="tabular hidden text-sm md:col-span-2 md:block">{formatKz(p.price)}</div>
 
-                <div className="col-start-2 md:col-span-1 md:col-start-auto">
+                <div className="col-start-2 flex flex-wrap gap-1.5 md:col-span-1 md:col-start-auto">
                   <StatusBadge status={p.status} />
+                  <ProductBadge availability={parseAvailability(p.availability)} />
                 </div>
 
                 <div className="col-span-2 md:col-span-2">

@@ -1,6 +1,12 @@
 // components/home/best-sellers.tsx
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { fallbackProducts, getPrimaryImage } from "@/lib/products";
+import {
+  fallbackProducts,
+  getPrimaryImage,
+  parseAvailability,
+  parseCategory,
+  soldOutLast,
+} from "@/lib/products";
 import { BestSellersClient, type ProductCardVM } from "./best-sellers-client";
 
 type Badge = "BEST SELLER" | "LIMITED" | "NEW" | null;
@@ -16,6 +22,8 @@ type ProductRow = {
   currency: string;
   badge: Badge;
   status: Status;
+  category: string | null;
+  availability: string | null;
   created_at: string;
 };
 
@@ -30,7 +38,7 @@ export async function BestSellers() {
   try {
     const { data: products, error: pErr } = await supabaseAdmin
       .from("products")
-      .select("id,slug,name,collection,price,currency,badge,status,created_at")
+      .select("id,slug,name,collection,price,currency,badge,status,category,availability,created_at")
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(8);
@@ -72,9 +80,11 @@ export async function BestSellers() {
       badge: (p.badge ?? undefined) as Exclude<Badge, null> | undefined,
       image: firstImageByProduct.get(p.id) ?? getPrimaryImage(),
       imageHover: secondImageByProduct.get(p.id) ?? undefined,
+      category: parseCategory(p.category),
+      availability: parseAvailability(p.availability),
     }));
 
-    return <BestSellersClient products={cards.slice(0, 4)} />;
+    return <BestSellersClient products={soldOutLast(cards).slice(0, 4)} />;
   } catch {
     const cards: ProductCardVM[] = fallbackProducts.map((product) => ({
       id: product.id,
@@ -86,6 +96,8 @@ export async function BestSellers() {
       badge: product.badge,
       image: getPrimaryImage(product.images),
       imageHover: product.images[1],
+      category: parseCategory(product.category),
+      availability: parseAvailability(product.availability),
     }));
 
     return <BestSellersClient products={cards.slice(0, 4)} />;

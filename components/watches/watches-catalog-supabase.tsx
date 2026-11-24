@@ -1,6 +1,13 @@
 // components/watches/watches-catalog-supabase.tsx
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { fallbackProducts, getPrimaryImage } from "@/lib/products";
+import {
+  fallbackProducts,
+  getPrimaryImage,
+  parseAvailability,
+  parseCategory,
+  type Availability,
+  type Category,
+} from "@/lib/products";
 import { WatchesCatalogClient } from "./watches-catalog.client";
 
 export type ProductCardVM = {
@@ -12,17 +19,21 @@ export type ProductCardVM = {
   currency: string;
   badge?: "BEST SELLER" | "LIMITED" | "NEW";
   image: string;
+  category: Category;
+  availability: Availability;
 };
 
 export async function WatchesCatalogSupabase({
   initialCollection,
+  initialCategory,
 }: {
   initialCollection?: string | null;
+  initialCategory?: string | null;
 } = {}) {
   try {
     const { data: products, error } = await supabaseAdmin
       .from("products")
-      .select("id,slug,name,collection,price,currency,badge,status,created_at")
+      .select("id,slug,name,collection,price,currency,badge,status,category,availability,created_at")
       .eq("status", "active")
       .order("created_at", { ascending: false });
 
@@ -59,9 +70,11 @@ export async function WatchesCatalogSupabase({
       currency: p.currency || "Kz",
       badge: p.badge ?? undefined,
       image: firstImageByProduct.get(p.id) ?? getPrimaryImage(),
+      category: parseCategory(p.category),
+      availability: parseAvailability(p.availability),
     }));
 
-    return <WatchesCatalogClient initialProducts={cards} initialCollection={initialCollection} />;
+    return <WatchesCatalogClient initialProducts={cards} initialCollection={initialCollection} initialCategory={initialCategory} />;
   } catch {
     const cards = fallbackProducts.map((product) => ({
       id: product.id,
@@ -72,8 +85,10 @@ export async function WatchesCatalogSupabase({
       currency: product.currency,
       badge: product.badge,
       image: getPrimaryImage(product.images),
+      category: parseCategory(product.category),
+      availability: parseAvailability(product.availability),
     }));
 
-    return <WatchesCatalogClient initialProducts={cards} initialCollection={initialCollection} />;
+    return <WatchesCatalogClient initialProducts={cards} initialCollection={initialCollection} initialCategory={initialCategory} />;
   }
 }

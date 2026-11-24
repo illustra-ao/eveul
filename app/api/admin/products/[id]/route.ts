@@ -20,6 +20,9 @@ export async function PATCH(
       status: body.status,
       description: body.description,
       highlights: body.highlights,
+      // undefined é omitido pelo supabase-js: pedidos parciais (ex.: só status) não mexem nestes campos
+      category: body.category,
+      availability: body.availability,
     };
 
     const { error } = await supabaseAdmin.from("products").update(payload).eq("id", id);

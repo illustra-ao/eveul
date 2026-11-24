@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { availabilityLabels, categoryLabels, parseAvailability, parseCategory } from "@/lib/products";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Field, Panel, selectClass, textareaClass } from "@/components/admin/admin-ui";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ async function createProduct(formData: FormData) {
   ) as Collection;
   const badgeRaw = String(formData.get("badge") ?? "") as Badge;
   const status = String(formData.get("status") ?? "draft") as Status;
+  const category = parseCategory(formData.get("category"));
+  const availability = parseAvailability(formData.get("availability"));
 
   const price = Number(
     String(formData.get("price") ?? "0").replace(/[^\d]/g, ""),
@@ -69,6 +72,8 @@ async function createProduct(formData: FormData) {
       description,
       highlights,
       status,
+      category,
+      availability,
     })
     .select("id")
     .single();
@@ -96,8 +101,15 @@ export default function AdminProductNewPage() {
               <Input id="name" name="name" required placeholder="Eveul Jupiter" />
             </Field>
 
-            <Field label="Slug" hint="Vazio = gerado a partir do nome" htmlFor="slug">
+            <Field label="Slug" hint="Vazio = gerado a partir do nome" htmlFor="slug" className="md:col-span-2">
               <Input id="slug" name="slug" placeholder="eveul-jupiter" />
+            </Field>
+
+            <Field label="Categoria" htmlFor="category">
+              <select id="category" name="category" defaultValue="watch" className={selectClass}>
+                <option value="watch">{categoryLabels.watch}</option>
+                <option value="eyewear">{categoryLabels.eyewear}</option>
+              </select>
             </Field>
 
             <Field label="Colecção" htmlFor="collection">
@@ -148,6 +160,14 @@ export default function AdminProductNewPage() {
                 <option value="draft">Rascunho</option>
                 <option value="active">Publicado</option>
                 <option value="archived">Arquivado</option>
+              </select>
+            </Field>
+
+            <Field label="Stock" hint="Aparece no site como badge" htmlFor="availability">
+              <select id="availability" name="availability" defaultValue="available" className={selectClass}>
+                <option value="available">{availabilityLabels.available}</option>
+                <option value="last">{availabilityLabels.last}</option>
+                <option value="soldout">{availabilityLabels.soldout}</option>
               </select>
             </Field>
           </div>

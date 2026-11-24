@@ -1,7 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 
+import type { Availability } from "@/lib/products";
+
 export type ProductBadgeValue = "BEST SELLER" | "LIMITED" | "NEW";
-export type Availability = "available" | "last" | "soldout";
+export type { Availability };
 
 const badgeMap = {
   "BEST SELLER": { variant: "best", label: "Best seller" },

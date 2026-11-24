@@ -3,6 +3,51 @@ import { siteConfig } from "@/lib/site-config";
 export type Collection = "Signature" | "Limited" | "Classic";
 export type Badge = "BEST SELLER" | "LIMITED" | "NEW";
 
+/* ── Categoria e disponibilidade (colunas products.category / products.availability) ── */
+
+export type Category = "watch" | "eyewear";
+export type Availability = "available" | "last" | "soldout";
+
+export const categories: Category[] = ["watch", "eyewear"];
+
+export const categoryLabels: Record<Category, string> = {
+  watch: "Relógios",
+  eyewear: "Óculos",
+};
+
+/** Valor usado no URL do catálogo: /watches?categoria=oculos */
+export const categoryParams: Record<Category, string> = {
+  watch: "relogios",
+  eyewear: "oculos",
+};
+
+export const availabilityLabels: Record<Availability, string> = {
+  available: "Disponível",
+  last: "Últimas unidades",
+  soldout: "Esgotado",
+};
+
+export function parseCategory(value: unknown): Category {
+  return value === "eyewear" ? "eyewear" : "watch";
+}
+
+export function parseAvailability(value: unknown): Availability {
+  return value === "last" || value === "soldout" ? value : "available";
+}
+
+/** ?categoria=oculos → "eyewear"; ausente/inválido → null (todas) */
+export function categoryFromParam(value?: string | null): Category | null {
+  const match = categories.find((c) => categoryParams[c] === value?.toLowerCase());
+  return match ?? null;
+}
+
+/** Esgotados vão para o fim, mantendo a ordem relativa dos restantes */
+export function soldOutLast<T extends { availability?: Availability }>(list: T[]): T[] {
+  return [...list].sort(
+    (a, b) => Number(a.availability === "soldout") - Number(b.availability === "soldout"),
+  );
+}
+
 export type ProductSpec = {
   k: string;
   v: string;
@@ -16,6 +61,8 @@ export type FallbackProduct = {
   price: number;
   currency: string;
   badge?: Badge;
+  category?: Category;
+  availability?: Availability;
   images: string[];
   description: string;
   highlights: string[];

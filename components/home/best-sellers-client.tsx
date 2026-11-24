@@ -2,6 +2,8 @@
 // Apresentação apenas (sem estado): pode ser renderizado no servidor.
 import Link from "next/link";
 
+import type { Availability, Category } from "@/lib/products";
+
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/brand/section";
 import { SectionHeader } from "@/components/brand/section-header";
@@ -17,6 +19,8 @@ export type ProductCardVM = {
   badge?: "BEST SELLER" | "LIMITED" | "NEW";
   image: string;
   imageHover?: string;
+  category?: Category;
+  availability?: Availability;
 };
 
 const gridClass =
@@ -54,6 +58,7 @@ export function BestSellersClient({ products }: { products: ProductCardVM[] }) {
                   collection: p.collection,
                   badge: p.badge,
                   image: p.image,
+                  availability: p.availability,
                 }}
               />
             </li>

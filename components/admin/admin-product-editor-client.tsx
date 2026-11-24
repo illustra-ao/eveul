@@ -11,6 +11,12 @@ import { formatKz } from "@/lib/site-config";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, Panel, StatusBadge, selectClass, textareaClass } from "@/components/admin/admin-ui";
+import {
+  availabilityLabels,
+  categoryLabels,
+  parseAvailability,
+  parseCategory,
+} from "@/lib/products";
 
 type Collection = "Signature" | "Limited" | "Classic";
 type Status = "active" | "draft" | "archived";
@@ -27,6 +33,8 @@ type Product = {
   description: string | null;
   highlights: string[];
   status: Status;
+  category?: string | null;
+  availability?: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -251,6 +259,8 @@ export function AdminProductEditorClient({
     status: product.status,
     highlights: product.highlights.join(", "),
     description: product.description ?? "",
+    category: parseCategory(product.category) as string,
+    availability: parseAvailability(product.availability) as string,
   });
 
   const [images, setImages] = useState<ProductImage[]>(initialImages);
@@ -287,6 +297,8 @@ export function AdminProductEditorClient({
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
+        category: parseCategory(form.category),
+        availability: parseAvailability(form.availability),
       };
 
       const res = await fetch(`/api/admin/products/${product.id}`, {
@@ -481,8 +493,15 @@ export function AdminProductEditorClient({
                 <Input id="name" value={form.name} onChange={(e) => setField("name", e.target.value)} />
               </Field>
 
-              <Field label="Slug" hint="Usado no endereço público" htmlFor="slug">
+              <Field label="Slug" hint="Usado no endereço público" htmlFor="slug" className="md:col-span-2">
                 <Input id="slug" value={form.slug} onChange={(e) => setField("slug", e.target.value)} />
+              </Field>
+
+              <Field label="Categoria" htmlFor="category">
+                <select id="category" value={form.category} onChange={(e) => setField("category", e.target.value)} className={selectClass}>
+                  <option value="watch">{categoryLabels.watch}</option>
+                  <option value="eyewear">{categoryLabels.eyewear}</option>
+                </select>
               </Field>
 
               <Field label="Colecção" htmlFor="collection">
@@ -533,6 +552,14 @@ export function AdminProductEditorClient({
                   <option value="draft">Rascunho</option>
                   <option value="active">Publicado</option>
                   <option value="archived">Arquivado</option>
+                </select>
+              </Field>
+
+              <Field label="Stock" hint="Aparece no site como badge" htmlFor="availability" className="md:col-span-2">
+                <select id="availability" value={form.availability} onChange={(e) => setField("availability", e.target.value)} className={selectClass}>
+                  <option value="available">{availabilityLabels.available}</option>
+                  <option value="last">{availabilityLabels.last} (mostra badge)</option>
+                  <option value="soldout">{availabilityLabels.soldout} (fica visível, com pedido de reposição)</option>
                 </select>
               </Field>
             </div>

@@ -3,7 +3,13 @@
 import Link from "next/link";
 
 import { formatKz, siteConfig } from "@/lib/site-config";
-import { getPrimaryImage } from "@/lib/products";
+import {
+  categoryLabels,
+  categoryParams,
+  getPrimaryImage,
+  type Availability,
+  type Category,
+} from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/brand/section";
 import { SectionHeader } from "@/components/brand/section-header";
@@ -29,6 +35,8 @@ export type WatchProduct = {
   highlights: readonly string[];
   specs: Spec[];
   stockLabel?: string;
+  category?: Category;
+  availability?: Availability;
 };
 
 const BUY_CTA_ID = "comprar";
@@ -52,6 +60,9 @@ export function WatchProductPage({
 }) {
   const images = product.images?.length ? product.images : [siteConfig.fallbackProductImage];
   const badge = asBadge(product.badge);
+  const category = product.category ?? "watch";
+  const availability = product.availability ?? "available";
+  const soldOut = availability === "soldout";
   // Garantia e envio já aparecem no bloco de confiança; não repetir nas especificações.
   const specs = product.specs.filter((s) => !["Garantia", "Envio"].includes(s.k));
 
@@ -63,7 +74,11 @@ export function WatchProductPage({
           <ol className="flex items-center gap-2">
             <li><Link href="/" className="hover:text-foreground">Início</Link></li>
             <li aria-hidden="true">/</li>
-            <li><Link href="/watches" className="hover:text-foreground">Relógios</Link></li>
+            <li>
+              <Link href={`/watches?categoria=${categoryParams[category]}`} className="hover:text-foreground">
+                {categoryLabels[category]}
+              </Link>
+            </li>
             <li aria-hidden="true">/</li>
             <li aria-current="page" className="text-foreground">{product.name}</li>
           </ol>
@@ -74,7 +89,7 @@ export function WatchProductPage({
             <ProductGallery
               images={images}
               name={product.name}
-              badge={<ProductBadge badge={badge} />}
+              badge={<ProductBadge badge={badge} availability={availability} />}
             />
           </div>
 
@@ -83,9 +98,22 @@ export function WatchProductPage({
               <p className="text-meta text-muted-foreground">Colecção {product.collection}</p>
               <h1 className="mt-2 text-h1">{product.name}</h1>
 
-              <p className="tabular mt-4 font-display text-[2rem] font-semibold leading-none tracking-wide text-gold">
-                {formatKz(product.price)}
-              </p>
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <p
+                  className={
+                    soldOut
+                      ? "tabular font-display text-[2rem] font-semibold leading-none tracking-wide text-muted-foreground line-through decoration-1"
+                      : "tabular font-display text-[2rem] font-semibold leading-none tracking-wide text-gold"
+                  }
+                >
+                  {formatKz(product.price)}
+                </p>
+                {availability !== "available" ? (
+                  <p className={soldOut ? "text-meta font-medium" : "text-meta font-medium text-gold"}>
+                    {soldOut ? "Esgotado" : "Últimas unidades"}
+                  </p>
+                ) : null}
+              </div>
 
               {product.description ? (
                 <p className="mt-6 text-lead text-muted-foreground">{product.description}</p>
@@ -104,10 +132,25 @@ export function WatchProductPage({
 
               {/* CTA principal: a barra fixa do mobile esconde-se enquanto este bloco está visível */}
               <div id={BUY_CTA_ID} className="mt-8 flex flex-col gap-3">
-                <WhatsAppButton productName={product.name} price={product.price} size="lg" className="w-full" />
-                <p className="text-center text-meta text-muted-foreground">
-                  Respondemos no WhatsApp com disponibilidade e formas de pagamento.
-                </p>
+                {soldOut ? (
+                  <>
+                    <WhatsAppButton productName={product.name} intent="restock" size="lg" className="w-full">
+                      Pedir reposição
+                    </WhatsAppButton>
+                    <p className="text-center text-meta text-muted-foreground">
+                      Este modelo esgotou. Diz-nos no WhatsApp e avisamos se voltar.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <WhatsAppButton productName={product.name} price={product.price} size="lg" className="w-full" />
+                    <p className="text-center text-meta text-muted-foreground">
+                      {availability === "last"
+                        ? "Restam poucas unidades. Confirmamos a disponibilidade no WhatsApp."
+                        : "Respondemos no WhatsApp com disponibilidade e formas de pagamento."}
+                    </p>
+                  </>
+                )}
               </div>
 
               <dl className="mt-8 border-t border-border">
@@ -160,6 +203,7 @@ export function WatchProductPage({
                     collection: p.collection,
                     badge: asBadge(p.badge),
                     image: getPrimaryImage(p.images),
+                    availability: p.availability,
                   }}
                 />
               </li>
@@ -168,7 +212,7 @@ export function WatchProductPage({
         </Section>
       ) : null}
 
-      <ProductBuyBar name={product.name} price={product.price} watchId={BUY_CTA_ID} />
+      <ProductBuyBar name={product.name} price={product.price} soldOut={soldOut} watchId={BUY_CTA_ID} />
     </>
   );
 }
